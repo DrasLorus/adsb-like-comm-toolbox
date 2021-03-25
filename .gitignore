@@ -13,3 +13,19 @@ src/systemc/bin/main
 src/systemc/received_image.bmp
 
 src/systemc/bin/received_image.bmp
+
+src/FPGA_ETHERNET_COM/picture_1_reverse.bmp
+
+src/FPGA_ETHERNET_COM/picture_2_hflip.bmp
+
+src/FPGA_ETHERNET_COM/picture_3_color_12bpp_ref.bmp
+
+src/FPGA_ETHERNET_COM/picture_3_color_12bpp.bmp
+
+src/FPGA_ETHERNET_COM/picture_sended.bmp
+
+src/FPGA_ETHERNET_COM/send_image_16bpp
+
+src/systemc/received_image_fixed_acc.bmp
+
+src/systemc/received_image_fixed.bmp
