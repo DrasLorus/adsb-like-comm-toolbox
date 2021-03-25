@@ -25,10 +25,10 @@ private:
 	{
 		cout << "(II) RAWReader :: START" << endl;
 
-		FILE* f = fopen("/tmp/image.raw", "rb");
+		FILE* f = fopen("/tmp/file.raw", "rb");
 		if( f == NULL )
         {
-        	cout << "(EE) Error opening the input file (/tmp/image.raw)" << endl;
+        	cout << "(EE) Error opening the input file (/tmp/file.raw)" << endl;
         	exit( EXIT_FAILURE );
         }
 

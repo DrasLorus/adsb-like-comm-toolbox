@@ -6,6 +6,9 @@
  *  Copyright 2007 __MyCompanyName__. All rights reserved.
  *
  */
+ #ifndef _FrameProcessing_
+ #define _FrameProcessing_
+
 #include "systemc.h"
 #include <cstdint>
 #include "constantes.hpp"
@@ -96,7 +99,7 @@ private:
                 // On utilise les données provenant de la trame pour calculer
                 // la position du bloc de pixel dans l'image
                 //
-                cout << mot1 << mot2 << endl;
+                // cout << mot1 << mot2 << endl;
                 uint32_t curr_off = mot1 + _IMAGE_WIDTH_ * mot2;
 
 //                cout << "(II) FrameProcessing :: FRAME_INFOS :: curr_y = " <<  curr_y << " :: special = " << special << " :: curr_off = " << curr_off << endl;
@@ -124,3 +127,4 @@ private:
         }
 	}
 };
+#endif

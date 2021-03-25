@@ -1,9 +1,9 @@
-#ifndef _my_module_
-#define _my_module_
+#ifndef _my_module1_
+#define _my_module1_
 
 #include "systemc.h"
 #include "ModuleCompute_old.hpp"
-#include "Detecteur.hpp"
+#include "Detecteur1.hpp"
 #include "DownSampling.hpp"
 #include "BitDecider.hpp"
 #include "BitsToBytes.hpp"
@@ -11,7 +11,7 @@
 #include "FrameProcessing.hpp"
 
 
-SC_MODULE(my_module)
+SC_MODULE(my_module1)
 {
 public:
     sc_in < bool > clock;
@@ -19,9 +19,11 @@ public:
     sc_fifo_in < sc_int <8>  > e;
     sc_fifo_out< sc_uint<32> > addr;
     sc_fifo_out< sc_uint<24> > rgbv;
+    // sc_fifo_out< bool > detect1;
 
 
-	SC_CTOR(my_module) :
+
+	SC_CTOR(my_module1) :
 	    mod("mod"),
 //      dbl("dbl"),
 	    det("det"),
@@ -59,6 +61,7 @@ public:
         det.e(mod2dbl);
 //        det.e2(dbl2det2);
         det.s(det2dow);
+        // det.detect1(detect1);
 
 
 
@@ -102,7 +105,7 @@ public:
 private:
     ModuleCompute   mod;
 //    DOUBLEUR_U        dbl;
-    Detecteur       det;
+    Detecteur1       det;
     DownSampling    dow;
     BitDecider      bit;
     BitsToBytes     byt;

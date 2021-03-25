@@ -6,18 +6,18 @@
  *  Copyright 2007 __MyCompanyName__. All rights reserved.
  *
  */
-#ifndef _Detecteur_
-#define _Detecteur_
+#ifndef _Detecteur1_
+#define _Detecteur1_
 
 #include "systemc.h"
 #include <cstdint>
 #include "Doubleur_uint.hpp"
-#include "trames_separ.hpp"
-#include "Seuil_calc.hpp"
+#include "trames_separ1.hpp"
+#include "Seuil_calc1.hpp"
 
 // #define _DEBUG_SYNCHRO_
 
-SC_MODULE(Detecteur)
+SC_MODULE(Detecteur1)
 {
 public:
     sc_in < bool > clock;
@@ -25,14 +25,17 @@ public:
     sc_fifo_in < sc_uint<8> > e;
     // sc_fifo_in < sc_uint<8> > e2;
     sc_fifo_out< sc_uint<8> > s;
+    // sc_fifo_out< bool > detect1;
 
-	SC_CTOR(Detecteur):
+
+	SC_CTOR(Detecteur1):
     s_calc("s_calc"),
     t_sep("t_sep"),
     dbl("dbl"),
     dbl2scalc("dbl2scalc",1024),
     dbl2tsep("dbl2tsep",1024),
     detect("detect", 1024)
+//    detect1("detect1", 4096)
 
 	{
     dbl.clock(clock);
@@ -45,6 +48,7 @@ public:
     s_calc.reset(reset);
     s_calc.e(dbl2scalc);
     s_calc.detect(detect);
+    // s_calc.detect1(detect1);
 
     t_sep.clock(clock);
     t_sep.reset(reset);
@@ -55,14 +59,15 @@ public:
 	}
 
 private:
-    Seuil_calc s_calc;
-    trames_separ t_sep;
+    Seuil_calc1 s_calc;
+    trames_separ1 t_sep;
     DOUBLEUR_U dbl;
 
 
     sc_fifo< sc_uint<8> > dbl2scalc;
     sc_fifo< sc_uint<8> > dbl2tsep;
     sc_fifo <bool> detect;
+
 
 
 

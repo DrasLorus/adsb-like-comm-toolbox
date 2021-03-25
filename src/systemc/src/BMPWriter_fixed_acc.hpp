@@ -10,22 +10,22 @@
 #include "constantes.hpp"
 #include "../../Tools/BMP.hpp"
 #include <string>
-SC_MODULE(BMPWriter)
+SC_MODULE(BMPWriter_fixed_acc)
 {
 public:
 
     sc_fifo_in< sc_uint<32> > addr;
 	sc_fifo_in< sc_uint<24> > rgbv;
 
-    SC_CTOR(BMPWriter)
+    SC_CTOR(BMPWriter_fixed_acc)
     {
         SC_THREAD(do_gen);
     }
 
-    ~BMPWriter( )
+    ~BMPWriter_fixed_acc( )
     {
         string fn;
-        fn = "received_image";
+        fn = "received_image_fixed_acc";
         string filename = fn + ".bmp";
         if (fopen(filename.c_str(), "rb")== NULL )
           bmp->write( filename.c_str() );

@@ -6,9 +6,13 @@
  *  Copyright 2007 __MyCompanyName__. All rights reserved.
  *
  */
+ #ifndef _CRCCheck_
+ #define _CRCCheck_
+
 #include "systemc.h"
 #include <cstdint>
 #include "constantes.hpp"
+
 
 SC_MODULE(CRCCheck)
 {
@@ -81,3 +85,4 @@ private:
 	}
 
 };
+#endif
