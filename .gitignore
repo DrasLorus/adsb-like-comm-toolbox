@@ -29,3 +29,4 @@ src/FPGA_ETHERNET_COM/send_image_16bpp
 src/systemc/received_image_fixed_acc.bmp
 
 src/systemc/received_image_fixed.bmp
+examples/build/*
