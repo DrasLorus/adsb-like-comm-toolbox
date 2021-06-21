@@ -30,7 +30,7 @@ void ReceiverFileUHD::initialize()
         fprintf(stderr, "RadioFichier::initialize() error during file openning (%s) !\n", filename.c_str());
         exit( EXIT_FAILURE );
     }
-    char line       [256];
+    char line[256];
     char* buffer_real;
     char* buffer_imag;
 
@@ -43,6 +43,12 @@ void ReceiverFileUHD::initialize()
         vmax = vmax > breal ? vmax : breal;
         vmax = vmax > bimag ? vmax : bimag;
         data.push_back(complex<float>(breal, bimag));
+    }
+    float vscale = std::max(std::abs(vmin), std::abs(vmax));
+    float*  ptr = (float*)data.data();
+    for(int i = 0; i< (2 * data.size()); i += 1)
+    {
+        ptr[i] = ptr[i] / vscale;
     }
 
     //
