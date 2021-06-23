@@ -30,3 +30,5 @@ src/systemc/received_image_fixed_acc.bmp
 
 src/systemc/received_image_fixed.bmp
 examples/build/*
+examples/cmake-build-debug/*
+examples/.idea/*
