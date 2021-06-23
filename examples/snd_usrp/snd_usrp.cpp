@@ -11,6 +11,8 @@
 #include <ctime>
 #include <cwchar>
 
+#include "../../src/Tools/ExportVector/ExportVector.hpp"
+
 using std::chrono::system_clock;
  
 void current_time(uint8_t buf[24])
@@ -50,6 +52,33 @@ void my_ctrl_c_handler(int s){
     isFinished = true;
 }
 
+void CRC( const uint8_t trame[88], uint8_t otrame[112] ){
+    for (int q = 0; q < 88; q++) otrame[     q] = trame[q];
+    for (int q = 0; q < 24; q++) otrame[88 + q] = 0;
+    return;
+
+    bitset<25> crc      = 0b0000000000000000000000000;
+    bitset<25> polynome = 0b1001000000101111111111111;
+
+    for(int q = 0/*8*/; q < 25/*33*/; q++){
+        crc[q/* - 8*/] = trame[q];
+    }
+
+    for (int q = 25/*33*/; q < 88/*120*/; q++){
+        if ( crc[0] == 1){
+            crc = crc xor polynome;
+        }
+        crc = crc >> 1;
+        crc[24] = trame[q];
+    }
+
+    if ( crc[0] == 1){
+        crc = crc xor polynome;
+    }
+
+    for (int q = 0; q < 88; q++) otrame[     q] = trame[q];
+    for (int q = 0; q < 24; q++) otrame[88 + q] = crc[q];
+}
 
 
 using namespace std;
@@ -76,16 +105,16 @@ int main(int argc, char* argv[])
 
     Parameters param;
     param.set("mode_radio", "radio");
-    param.set("filename",   "usrp");
+    param.set("filename",   "hackrf");
 
-    param.set("fc",      433000000.0);
+    param.set("fc",      2400000000.0);
     param.set("fe",        4000000.0);
     param.set("fe_real",   4000000.0);
 
     param.set("surEch",     1);
-    param.set("tx_gain",   24);
+    param.set("tx_gain",   32);
     param.set("antenna",    1);
-    param.set("amplifier",  0);
+    param.set("amplifier",  1);
 
     param.set("payload",   11);
 
@@ -233,13 +262,17 @@ int main(int argc, char* argv[])
 
     const uint32_t payload = param.toInt("payload");
 
-    vector<uint8_t> vec_dat (               payload            );
-    vector<uint8_t> vec_crc (           (payload + 3)       );
-    vector<uint8_t> vec_bits(      (8 * (payload + 3))      );
-    vector<uint8_t> vec_sync(     ((8 * (payload + 3)) + 8) );
-    vector< int8_t> vec_ppm ( 2 * ((8 * (payload + 3)) + 8) );
-    vector< int8_t> vec_up  ( 4 * ((8 * (payload + 3)) + 8) );
-    vector< int8_t> vec_iq  ( 8 * ((8 * (payload + 3)) + 8) );
+    vector<uint8_t> vec_dat (               payload            );  //  11 octets
+    vector<uint8_t> vec_bits(      (8 * (payload    ))      );  //  88 bits
+    vector<uint8_t> vec_crc (      (8 * (payload + 3))      );  // 112 bits
+    vector<uint8_t> vec_sync(     ((8 * (payload + 3)) + 8) );  // 120 bits
+    vector< int8_t> vec_ppm ( 2 * ((8 * (payload + 3)) + 8) );  // 240 bits
+    vector< int8_t> vec_up  ( 4 * ((8 * (payload + 3)) + 8) );  // 480 bits
+    vector< int8_t> vec_iq  ( 8 * ((8 * (payload + 3)) + 8) );  // 480 symbols (I/Q)
+    vector< int8_t> vec_zr  ( 8 * ((8 * (payload + 3)) + 8) );  // 480 symbols (I/Q)
+
+    for(int i = 0; i < vec_zr.size(); i += 1)
+        vec_zr[i] = 0;
 
     InsertCRC32b      i_crc;
     BitUnpacking      i_bp;
@@ -297,22 +330,53 @@ int main(int argc, char* argv[])
     auto start = std::chrono::system_clock::now(); // This and "end"'s type is std::chrono::time_point
 
     int nFrames = 0;
-    uint64_t data_pos = 0;
     while( isFinished == false )
     {
-        current_time( vec_dat.data() );
-        
-        i_crc.execute (vec_dat,  vec_crc );
-        i_bp.execute  (vec_crc,  vec_bits);
-        i_sync.execute(vec_bits, vec_sync);
+        for(int i = 0; i < vec_dat.size(); i += 1)
+            vec_dat[i] = 1;
+        vec_dat[vec_dat.size() - 1] = nFrames;
+
+//        for(int i = 0; i < vec_dat.size(); i += 1)
+//            printf("%d ", vec_dat[i]); printf("\n");
+
+        i_bp.execute  (vec_dat,  vec_bits);
+
+//        for(int i = 0; i < vec_bits.size(); i += 1)
+//            printf("%d ", vec_bits[i]); printf("\n");
+
+        CRC           (vec_bits.data(),  vec_crc.data());
+
+//        for(int i = 0; i < vec_crc.size(); i += 1)
+//            printf("%d ", vec_crc[i]); printf("\n");
+
+        i_sync.execute(vec_crc, vec_sync);
+
+//        for(int i = 0; i < vec_sync.size(); i += 1)
+//            printf("%d ", vec_sync[i]); printf("\n");
+
         i_ppm.execute (vec_sync, vec_ppm );
+
+//        for(int i = 0; i < vec_ppm.size(); i += 1)
+//            printf("%d ", vec_ppm[i]); printf("\n");
+
         i_up.execute  (vec_ppm,  vec_up  );
+
+//        for(int i = 0; i < vec_up.size(); i += 1)
+//            printf("%d ", vec_up[i]); printf("\n");
+
         i_iq.execute  (vec_up,   vec_iq  );
 
+//        for(int i = 0; i < vec_iq.size(); i += 1)
+//            printf("%d ", vec_iq[i]); printf("\n");
+
+//        printf("(II) -> Radio transmission\n");
+//        ExportVector::SaveToS8(vec_iq, "vec_iq.data");
+        radio.emission ( vec_zr );
         radio.emission ( vec_iq );
+        radio.emission ( vec_zr );
 
-        usleep( sleep_time );
-
+        usleep( 1000 );
+//        exit( 0 );
         nFrames += 1;
     }
 
@@ -327,7 +391,6 @@ int main(int argc, char* argv[])
     std::cout << "Nombre de trames emises  (frames)  = " << nFrames << std::endl;
     std::cout << "Temps total d'émission   (seconds) = " << elapsed.count() << std::endl;
     std::cout << "Trames par seconde       (frames)  = " << (nFrames/elapsed.count()) << std::endl;
-//    std::cout << "Débit emis par seconde   (bits)    = " << (nFrames/elapsed.count()*f.frame_bits()) << std::endl;
     std::cout << "Débit utile par seconde  (bytes)   = " << (nFrames/elapsed.count()*payload) << std::endl;
     std::cout << "Débit utile par seconde  (bits)    = " << (nFrames/elapsed.count()*payload*8) << std::endl;
 
