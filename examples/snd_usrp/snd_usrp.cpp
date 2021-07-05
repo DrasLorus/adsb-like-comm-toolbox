@@ -37,7 +37,7 @@ void current_time(uint8_t buf[24])
 #include "../../src/Processing/DataPacking/BitUnpacking/BitUnpacking.hpp"
 #include "../../src/Processing/ADSBSynchro/InsertADSBSynchro/InsertADSBSynchro.hpp"
 
-#include "../../src/Radio/Emitter/Radio/HackRF/EmitterHackRF.hpp"
+#include "../../src/Radio/Emitter/Library/EmitterLibrary.hpp"
 
 
 #include "../../src/couleur.h"
@@ -52,19 +52,47 @@ void my_ctrl_c_handler(int s){
     isFinished = true;
 }
 
-void CRC( const uint8_t trame[88], uint8_t otrame[112] ){
+void CRC( const uint8_t trame[88], uint8_t otrame[112] )
+{
+    bitset<25> crc      = 0b0000000000000000000000000;
+    bitset<25> polynome = 0b1001000000101111111111111;
+
+    for(int q = 0; q < 25; q++){
+        crc[q] = trame[q];
+    }
+
+    for (int q = 25; q < 88; q++){
+        if ( crc[0] == 1){
+            crc = crc xor polynome;
+        }
+        crc = crc >> 1;
+        crc[24] = trame[q];
+    }
+    for (int q = 88; q < 112; q++){
+        if ( crc[0] == 1){
+            crc = crc xor polynome;
+        }
+        crc = crc >> 1;
+        crc[24] = 0;
+    }
+    if ( crc[0] == 1){
+        crc = crc xor polynome;
+    }
+    crc = crc >> 1;
     for (int q = 0; q < 88; q++) otrame[     q] = trame[q];
-    for (int q = 0; q < 24; q++) otrame[88 + q] = 0;
-    return;
+    for (int q = 0; q < 24; q++) otrame[88 + q] = crc[q];
+}
+
+bool CRC( const uint8_t trame[120] ){
 
     bitset<25> crc      = 0b0000000000000000000000000;
     bitset<25> polynome = 0b1001000000101111111111111;
 
-    for(int q = 0/*8*/; q < 25/*33*/; q++){
-        crc[q/* - 8*/] = trame[q];
+    for(int q = 8; q < 33; q++){
+        crc[q - 8] = trame[q];
     }
 
-    for (int q = 25/*33*/; q < 88/*120*/; q++){
+    for (int q=33; q < 120; q++){
         if ( crc[0] == 1){
             crc = crc xor polynome;
         }
@@ -75,9 +103,43 @@ void CRC( const uint8_t trame[88], uint8_t otrame[112] ){
     if ( crc[0] == 1){
         crc = crc xor polynome;
     }
+    if (crc == 0x00000000)
+        return true;
+    else
+        return false;
+}
 
-    for (int q = 0; q < 88; q++) otrame[     q] = trame[q];
-    for (int q = 0; q < 24; q++) otrame[88 + q] = crc[q];
+const uint32_t CRC_POLY = 0x00FFF409;
+//const uint32_t CRC_POLY = 0x902FFF00;
+uint32_t CRC_LUT[256];
+
+void init_crc_lut(){
+    uint32_t i,j;
+    uint32_t crc;
+
+    for(i = 0; i < 256; i++){
+        crc = i << 16;
+        for(j = 0; j < 8; j++){
+            if(crc & 0x800000){
+                crc = ((crc << 1) ^ CRC_POLY) & 0xffffff;
+            }
+            else{
+                crc  = (crc << 1) & 0xffffff;
+            }
+
+        }
+        CRC_LUT[i] = crc & 0xffffff;
+    }
+}
+
+uint32_t check_crc(const uint8_t *msg, const uint32_t length)
+{
+    uint32_t i;
+    uint32_t crc=0;
+    for(i = 0; i < length; i++){
+        crc = CRC_LUT[ ((crc >> 16) ^ msg[i]) & 0xff] ^ (crc << 8);
+    }
+    return crc &0xffffff;
 }
 
 
@@ -94,6 +156,44 @@ int main(int argc, char* argv[])
     //  On gere manuellement le CTRL-C afin de quitter proprement le programme
     //  apres avoir eteint la radio logicielle...
     //
+#if 0
+    uint8_t xtrame[112] =  {
+            1,0,0,0,1,1,0,1,0,1,0,0,0,0,0,0,0,1,1,0,1,0,
+            1,1,1,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,
+            0,1,0,1,1,0,1,0,0,1,1,0,0,1,1,1,1,0,0,0,1,1,
+            0,1,0,1,0,0,1,1,0,1,0,0,1,0,0,0,1,0,0,0,0,0,
+            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    };
+
+    uint8_t trame[88];
+    uint8_t otrame[120];
+
+    for(int i = 0; i <  88;  i+= 1)  trame[i] = i%2;
+    for(int i = 0; i < 120;  i+= 1) otrame[i] =   0;
+
+    CRC(xtrame, otrame + 8);
+
+//    otrame[8] = !otrame[8];
+
+    if( CRC(otrame) == false )
+    {
+        std::cout << "CRC check failed !" << std::endl;
+    }
+
+    init_crc_lut();
+
+    uint32_t ok = check_crc(otrame + 8, 112);
+
+    if( ok != 0 )
+    {
+        std::cout << "CRC+ check failed !" << std::endl;
+        printf("0x%8.8X\n", ok);
+    }
+
+    for(int i = 0; i <  88;  i+= 1) printf("%d", xtrame[i  ]); printf("\n");
+    for(int i = 0; i < 112;  i+= 1) printf("%d", otrame[i+8]); printf("\n");
+    exit( EXIT_FAILURE );
+#endif
 
     struct sigaction sigIntHandler;
     sigIntHandler.sa_handler = my_ctrl_c_handler;
@@ -253,10 +353,11 @@ int main(int argc, char* argv[])
     //
     // On selectionne le module d'emission en fonction des choix de l'utilisateur
     //
-    EmitterHackRF radio( param.toDouble("fc"), param.toDouble("fe_real") );
-    radio.initialize    ();
-    radio.start_engine  ();
-    radio.set_txvga_gain( param.toInt("tx_gain") );
+    Emitter* radio = EmitterLibrary::allocate( param );
+//    EmitterHackRF radio( param.toDouble("fc"), param.toDouble("fe_real") );
+    radio->initialize    ();
+    radio->start_engine  ();
+    radio->set_txvga_gain( param.toInt("tx_gain") );
     usleep( 2000 );
     
 
@@ -312,15 +413,12 @@ int main(int argc, char* argv[])
     }
 
     printf("(II) ADSB-like configuration parameters :\n");
-//    printf("(II) -> ADSB-like payload length  : %d bytes\n", f.payload_size());
-//    printf("(II) -> ADSB-like frame length    : %d bits\n",  f.frame_bits());
     printf("(II) -> Time delay between frames : %d us\n",    param.toInt("sleep_time"));
     printf("(II)\n");
     printf("(II) HackRF module configuration :\n");
-    printf("(II) -> VGA transmitter gain value : %d\n",      param.toInt("tx_gain"));
-    printf("(II) -> VGA transmitter gain value : %d\n",      param.toInt("tx_gain"));
-    printf("(II) -> HackRF antenna parameter   : disable\n" );
-    printf("(II) -> HackRF amplifier parameter : disable\n");
+    printf("(II) -> Transmitter gain value : %d\n",      param.toInt("tx_gain"));
+    printf("(II) -> Antenna parameter      : disable\n" );
+    printf("(II) -> Amplifier parameter    : disable\n");
     printf("(II)\n");
 
     //
@@ -350,6 +448,11 @@ int main(int argc, char* argv[])
 //            printf("%d ", vec_crc[i]); printf("\n");
 
         i_sync.execute(vec_crc, vec_sync);
+        if( CRC(vec_sync.data()) == false )
+        {
+            std::cout << "CRC check failed !" << std::endl;
+            exit( EXIT_FAILURE );
+        }
 
 //        for(int i = 0; i < vec_sync.size(); i += 1)
 //            printf("%d ", vec_sync[i]); printf("\n");
@@ -371,11 +474,11 @@ int main(int argc, char* argv[])
 
 //        printf("(II) -> Radio transmission\n");
 //        ExportVector::SaveToS8(vec_iq, "vec_iq.data");
-        radio.emission ( vec_zr );
-        radio.emission ( vec_iq );
-        radio.emission ( vec_zr );
+        radio->emission ( vec_zr );
+        radio->emission ( vec_iq );
+        radio->emission ( vec_zr );
 
-        usleep( 1000 );
+        usleep( 100000 );
 //        exit( 0 );
         nFrames += 1;
     }
@@ -394,8 +497,9 @@ int main(int argc, char* argv[])
     std::cout << "Débit utile par seconde  (bytes)   = " << (nFrames/elapsed.count()*payload) << std::endl;
     std::cout << "Débit utile par seconde  (bits)    = " << (nFrames/elapsed.count()*payload*8) << std::endl;
 
-    radio.stop_engine();
-    radio.close();
+    radio->stop_engine();
+    radio->close();
+    delete radio;
 
 	return 0;
 }

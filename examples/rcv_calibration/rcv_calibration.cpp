@@ -17,55 +17,9 @@
 
 #include "../../src/Tools/Parameters/Parameters.hpp"
 #include "../../src/Tools/CTickCounter/CTickCounter.hpp"
-#include "../../src/Tools/Conversion/cvt_float_u8.hpp"
 
 #include "../../src/Radio/Receiver/Library/ReceiverLibrary.hpp"
-
-
-bool CRC( const uint8_t trame[120]){
-
-    bitset<25> crc = 0b0000000000000000000000000;
-    bitset<25> polynome2 = 0b1111111111111010000001001;
-    bitset<25> polynome = 0b1001000000101111111111111;
-
-    for(int q=8; q <33; q++){
-        crc[q - 8] = trame[q];
-    }
-
-    for (int q=33; q < 120; q++){
-        if ( crc[0] == 1){
-            crc = crc xor polynome;
-        }
-        crc = crc >> 1;
-        crc[24] = trame[q];
-    }
-
-    if ( crc[0] == 1){
-        crc = crc xor polynome;
-    }
-
-    if (crc == 0x00000000) return true;
-    else return false;
-}
-
-//
-//  CplxModule des nombres complexes => module flottant
-//
-
 #include "../../src/Processing/CplxModule/Library/CplxModuleLibrary.hpp"
-#include "../../src/Processing/Detector/Library/DetectorLibrary.hpp"
-#include "../../src/Chains/ADBS-like/Decoder/Decoder_ADBS_like_chain.hpp"
-#include "../../src/Chains/ADBS-like-fec/Decoder/Decoder_ADBS_FEC_chain.hpp"
-
-
-//
-//  Correlateur permettant de détecter le prologue des trames ADSB
-//
-
-//#include "../../src/Frame/Frame.hpp"
-#include "../../src/Processing/Sampling/Down/DownSampling.hpp"
-#include "../../src/Processing/PPM/demod/PPM_demod.hpp"
-
 #include "../../src/couleur.h"
 
 using namespace std;
@@ -80,23 +34,142 @@ void my_ctrl_c_handler(int s){
     isFinished = true;
 }
 
-void show(std::vector<float>& v)
-{
-    const uint32_t ll = v.size();
-    for(uint32_t i = 0; i < ll; i += 1)
-    {
-        if( i%16 == 0 )
-            printf("\n");
-        printf("%1.3f ", v[i]);
-    }
-    printf("\n");
-}
 
-/*   ============================== MAIN =========================== */
-/*
-	4 ech = 1 symb
-	1 trame = 120 symb = 480 ech
-*/
+class Histo
+{
+private:
+    int32_t  _binSize;
+    int32_t  _vmin;
+    int32_t  _vmax;
+    uint64_t _count;
+    float    _vsum;
+
+    vector<uint64_t> values;
+
+public:
+    Histo(const int32_t binSize = 4)
+    {
+        _binSize = binSize;
+        values.resize( 256 );
+        clear();
+    }
+
+    void update(vector<uint8_t>& data)
+    {
+        for(int i = 0; i < data.size(); i++)
+        {
+            const int32_t index = (int32_t)data[i];
+            _vmax = (_vmax >= index) ? _vmax : index;
+            _vmin = (_vmin >= index) ? _vmin : index;
+            _vsum = _vsum + (index - 127);                  // WARNING IT IS NOT THE SAME EVERYTIMES
+            values[ index ] += 1;
+        }
+        _count += data.size();
+    }
+
+    void update(vector<int8_t>& data)
+    {
+        for(int i = 0; i < data.size(); i++)
+        {
+            const int32_t index = ((int32_t)data[i]) + 128;
+            _vmax = (_vmax >= index) ? _vmax : index;
+            _vmin = (_vmin >= index) ? _vmin : index;
+            _vsum = _vsum + (index - 128);                  // WARNING IT IS NOT THE SAME EVERYTIMES
+            values[ index ] += 1;
+        }
+        _count += data.size();
+    }
+
+    void update(vector<float>& data)
+    {
+        for(int i = 0; i < data.size(); i++)
+        {
+            assert( data[i] <= +1.0f );
+            assert( data[i] >= -1.0f );
+            const int32_t index = ((data[i] * 127.0f) + 127.0f);
+            _vmax = (_vmax >= index) ? _vmax : index;
+            _vmin = (_vmin >= index) ? _vmin : index;
+            _vsum = _vsum + (index - 127);                  // WARNING IT IS NOT THE SAME EVERYTIMES
+            values[ index ] += 1;
+        }
+        _count += data.size();
+    }
+
+    void update(vector<complex<float>>& data)
+    {
+        for(int i = 0; i < data.size(); i++)
+        {
+            assert( data[i].real()  <= +1.0f );
+            assert( data[i].real()  >= -1.0f );
+            const int32_t index = ((data[i].real() * 127.0f) + 127.0f);
+            _vmax = (_vmax >= index) ? _vmax : index;
+            _vmin = (_vmin >= index) ? _vmin : index;
+            _vsum = _vsum + (index - 127);                  // WARNING IT IS NOT THE SAME EVERYTIMES
+            values[ index ] += 1;
+//            cout << "data[i].real() = " << data[i].real() << " and index = " << index << std::endl;
+        }
+        _count += data.size();
+    }
+
+    void clear()
+    {
+        _vmin  = +127;
+        _vsum  =    0;
+        _vmax  = -127;
+        _count =    0;
+
+        for(int i = 0; i < values.size(); i++)
+            values[i] = 0;
+    }
+
+    void stats()
+    {
+        //
+        // On sous echantillonne notre vecteur
+        //
+        vector<int64_t> binValues( values.size() / _binSize );
+        for(int32_t i = 0; i <  values.size(); i += _binSize)
+        {
+            int64_t tSum = 0;
+            for(int32_t j = 0; j <  _binSize; j += 1)
+            {
+                tSum += values[i + j];
+            }
+            binValues[i/_binSize] = tSum;
+        }
+
+        int64_t sumv = 0;
+        for(int32_t i = 0; i <  binValues.size(); i++)
+        {
+            sumv += binValues[i];
+        }
+        int32_t first = 0;
+        for(int32_t i = 0; i <  binValues.size(); i++)
+        {
+            if(binValues[i] != 0) break;
+            first = i;
+        }
+        int last = binValues.size() - 1;
+        for(int32_t i = binValues.size() - 1; i >= 0; i -= 1)
+        {
+            if(binValues[i] != 0) break;
+            last = i;
+        }
+        for(int32_t i = 0; i <  binValues.size(); i++)
+        {
+            binValues[i] = (10000 * binValues[i]) /  sumv; // 100 * 100 pour garder 2 digits frac.
+        }
+        cout << "---------------------------------------------------" << endl;
+        for(int32_t i = first; i <=  last; i++)
+        {
+            printf("[%3d:%3d] - %1.3f\n", _binSize * i, _binSize * i + (_binSize -1), ((float)binValues[i])/100.0f);
+        }
+    }
+
+};
+
+
+
 int main(int argc, char* argv[])
 {
 
@@ -106,36 +179,17 @@ int main(int argc, char* argv[])
     sigIntHandler.sa_flags = 0;
     sigaction(SIGINT, &sigIntHandler, NULL);
 
-	uint32_t nbTramesDetectees = 0; // nbre trame ...
-    uint32_t nbTotalTrames     = 0;
-    uint32_t nbBonsCRCs        = 0;
-
 	int c; //getopt
 
     Parameters param;
-
     param.set("mode_radio","radio");
     param.set("filename",   "usrp");
-
     param.set("fc", 1090000000.0);
     param.set("fe",    4000000.0);
-
     param.set("hackrf_amplifier", -1);
-
     param.set("receiver_gain",      -1);
-
-    param.set("mode_conv",  "AVX2"); // scalar
     param.set("mode_corr",  "AVX2"); // scalar
-
-    param.set("payload", 60);
-
-    param.set("verbose", 0);
-
-    param.set("ps_min", 0.75f);
-
     param.set("mode_inter",       true);
-    param.set("dump_first_frame", false);
-
     param.set("crystal_correct",   0);
 
 
@@ -145,7 +199,6 @@ int main(int argc, char* argv[])
 		{"seuil",   required_argument,   NULL, 's'},  // pour changer la valeur min de la correlation (synchro)
 		{"np",      required_argument,   NULL, 'n'},  // pour changer le nombre de boucle Np (ie nbre echantillon*200000) // Np = 10 => 0.5 s
 
-		{"conv",    required_argument,   NULL, 'c'}, // a partir d'un fichier
 		{"corr",    required_argument,   NULL, 'd'}, // a partir d'un fichier
 
 		{"radio",       required_argument,   NULL, 'r'}, // a partir d'un fichier
@@ -221,10 +274,6 @@ int main(int argc, char* argv[])
             case '?':
                 break;
 
-            case 'c':
-                param.set("mode_conv", optarg);
-                break;
-
             case 'd':
                 param.set("mode_corr", optarg);
                 break;
@@ -287,20 +336,6 @@ int main(int argc, char* argv[])
 	//
     Receiver* radio = ReceiverLibrary::allocate( param );
 
-    //
-    // Selection du module de correlation employé dans le programme
-    //
-    Detector* detect = DetectorLibrary::allocate( param );
-
-
-    //
-    // Selection du module de conversion employé dans le programme
-    //
-    CplxModule* conv = CplxModuleLibrary::allocate( param );
-
-
-//    Frame f( param.toInt("payload") );
-
     printf("(II) Launching the emitter application :\n");
     printf("(II) -> Modulation frequency    : %4d MHz\n",    (uint32_t)(param.toDouble("fc"     )/1000000.0));
     printf("(II) -> Symbol sampling freq.   : %4d MHz\n",    (uint32_t)(param.toDouble("fe"     )/1000000.0));
@@ -323,15 +358,6 @@ int main(int argc, char* argv[])
         printf("(II)\n");
     }
 
-    printf("(II) HackRF module configuration :\n");
-    printf("(II) -> HackRF antenna parameter   : enable\n" );
-    printf("(II) -> HackRF amplifier parameter : disable\n");
-
-
-    //
-    // Selection du module de conversion employé dans le programme
-    //
-
 
     //
     // Selection du module de conversion employé dans le programme
@@ -347,215 +373,42 @@ int main(int argc, char* argv[])
     // Selection du module de conversion employé dans le programme
     //
 
-    CTickCounter timer;
-
-    const float ps_min = param.toFloat("ps_min");
     uint32_t loop_counter = 0;
 
-
-    std::vector<float> buffer_abs;
-    std::vector<float> buffer_detect;
-
-    DownSampling down(2);
-    PPM_demod ppd;
-
-    std::vector<uint8_t> buff_6;
-    std::vector<uint8_t> buff_7;
-
-#if 0
-    BMP* bmp = nullptr;
-    int32_t i_width  = -1;
-    int32_t i_height = -1;
-    int32_t curr_x   =  0;
-    int32_t curr_y   =  0;
-
-    uint32_t nBytesPerPixel = 0;
-    uint32_t nBytesPerLine = 0;
-#endif
-
-    vector<float>   vec_down (480);
-    vector<float>   vec_oppm (240);
-    vector<uint8_t> vec_osync(120);
-    vector<uint8_t> vec_pack (112);
-    vector<uint8_t> vec_final( 14);
-
-    DownSampling      o_down(2);
-    PPM_demod         o_ppm;
-    RemoveADSBSynchro o_sync;
-    BitPacking        o_pack;
-    CheckCRC32b       o_ccrc;
-    RemoveCRC32b      c_rcrc;
-
-
-//    Decoder_chain* dec_chain;
-//    dec_chain = new Decoder_ADBS_like_chain( F.size_frame() );
-
-    std::vector<uint8_t> frame_buf( 112 );
-
-
-#ifdef _TRACE_MODE_
-    std::ofstream of( "dec_frames.txt" );
-#endif
-
-//#define _DUMP_ALL_SIGNALS_
-
-
-#ifdef _DUMP_ALL_SIGNALS_
-    std::vector<uint8_t> frame_status( buffer_detect.size() );
-#endif
-
-    bool firstAcq = true;
-    const bool mode_inter = param.toBool("mode_inter");
-
-    uint32_t stream_ptr = 0;
-
-    const uint32_t verbose =  param.toInt("verbose");
-
     vector<int32_t> histo(1024);
+
     for(int i = 0; i <  1024; i++) histo[i] = 0;
+
+    Histo mHisto;
 
 	while( radio->alive() && (isFinished == false) )
 	{
         auto startIter = std::chrono::system_clock::now();
+	    const uint32_t coverage = 0;
 
-	    //
-	    uint32_t coverage = 0;
-//	    uint32_t coverage = dec_chain->ibuffer_size();
-//      coverage = (firstAcq == true) ? 0 : coverage;
-//      firstAcq = false;
-
-#if 0
-        printf("(II) RADIO RECEPTION (stream = %8u | nSample = %8lu)\n", stream_ptr, buffer.size() - coverage);
-#endif
-
-        stream_ptr += buffer.size() - coverage;
-#if 0
-        int caff = cnt%64;
-        if( caff ==   0 ) printf("Reception .   \r");
-        if( caff ==  16 ) printf("Reception ..  \r");
-        if( caff ==  32 ) printf("Reception ... \r");
-        if( caff ==  48 ) printf("Reception ....\r");
-        fflush(stdout);
-        cnt += 1;
-#endif
-        timer.start_loading();
         radio->reception(buffer, coverage);
-        timer.stop_loading();
+
+        mHisto.update( buffer );
 
         if( radio->alive() == false )    // Cela signifie que l'on a rencontré une erreur lors de la
             continue;                   // reception des echantillons
 
-        //
-        // CALCUL DU MODULE DES VOIES (I,Q)
-        //
-        timer.start_conversion();
-        conv->execute( &buffer, &buffer_abs );
-        timer.stop_conversion();
-
-        //
-        // ON LANCE LA FONCTION DE DETECTION SUR L'ENSEMBLE DU BUFFER
-        //
-        timer.start_detection();
-        detect->execute(&buffer_abs, &buffer_detect);
-        timer.stop_detection();
-
-        //
-        // ON VA MAINTENANT PARCOURIR LE TABLEAU DE SCORE POUR DETECTER LES TRAMES
-        //
-        const uint32_t length  = (buffer_abs.size() - coverage);
-        for(uint32_t k = 0; k < length; k += 1)
-		{
-
-            float s = buffer_detect[k];
-            if (s > ps_min)
-            {
-                timer.start_decoding();
-                nbTramesDetectees +=1;    // On vient de detecter qqchose
-
-//                cvt_float_u8::execute( buffer_abs.data() + k, &vec_down );
-                for(int x = 0; x < vec_down.size(); x += 1)
-                    vec_down[x] = buffer_abs[x + k];
-
-                o_down.execute(vec_down,   vec_oppm );
-                o_ppm.execute (vec_oppm, vec_osync );   // 120 bits
-                o_sync.execute(vec_osync, vec_pack);    // 112 bits
-                o_pack.execute(vec_pack,   vec_final );    //  15 octets
-
-                bool ok = CRC( vec_osync.data() );
-
-                int sum = 0;
-                for (int j=0; j < vec_osync.size(); j = j+1)
-                    sum += vec_osync[j];
-                if( sum == 0 ) ok = false;
-
-                nbBonsCRCs += ok;
-
-                if( ((sum != 0) || (verbose >= 2))  && ((ok == true) || (ok == false && verbose >= 1)) )
-                {
-                    printf("%1.3f : 0x", s);
-                    if( ok )
-                    {
-//                        for(int i = 0; i < vec_osync.size(); i += 1)
-//                            printf("%d", vec_osync[i]);
-                        for(int i = 0; i < vec_final.size(); i += 1)
-                            printf("%2.2X", vec_final[i]);
-
-                        int oaci = 0;
-                        for (int q=0; q < 24; q++){
-                            oaci += vec_osync[16+q] * pow(2,23-q);
-                        }
-                        printf(" [OACI : %06X] ", oaci);
-
-                        green();
-                        printf(" [CRC OK]\n");
-                        black();
-                    }
-                    else
-                    {
-                        for(int i = 0; i < vec_osync.size(); i += 1)
-                        {
-                            if(i ==  8) printf(" ");
-                            else if(i == 13) printf(" ");
-                            else if(i == 16) printf(" ");
-                            else if(i == 40) printf(" ");
-                            else if(i == 96) printf(" ");
-                            printf("%d", vec_osync[i]);
-                        }
-                        printf(" ");
-
-                        int oaci = 0;
-                        for (int q=0; q < 24; q++){
-                            oaci += vec_osync[16+q] * pow(2,23-q);
-                        }
-                        printf(" [OACI : %06X] ", oaci);
-
-                        red();
-                        printf(" [CRC KO]\n");
-                        black();
-                    }
-                }
-                timer.stop_decoding();
-            }
+        if( loop_counter%32 == 0 )
+        {
+            mHisto.stats();
+            mHisto.clear();
         }
-        loop_counter += 1;
-
 
         //
         // ON GARDE UNE TRACE DU TEMPS D'EXECUTION DE L'ITERATION POUR L'HISTOGRAMME DU REPORT
         //
-
         auto stopIter = std::chrono::system_clock::now();
         int ms = chrono::duration_cast<chrono::milliseconds>(stopIter - startIter).count();
         histo[ms] += 1;
+
+        loop_counter += 1;
 	}
 
-
-    printf("\n================================================================\n");
-    std::cout << "loading    : " << timer.loading()     << std::endl;
-    std::cout << "conversion : " << timer.conversion()  << std::endl;
-    std::cout << "detection  : " << timer.detection()   << std::endl;
-    std::cout << "decoding   : " << timer.decoding()    << std::endl;
-	printf("================================================================\n");
 
     auto end = std::chrono::system_clock::now();
     std::chrono::duration<double> elapsed = end - start;
@@ -567,23 +420,8 @@ int main(int argc, char* argv[])
     std::cout << "Temps moyen par acquisition   : " << avgTime      << " ms" << std::endl;
     std::cout << "Constrainte tps réel / iter   : " << RTConstr     << " ms" << std::endl;
 
-    std::cout << "Nombre de trames detectees    : " << nbTramesDetectees << std::endl;
-    std::cout << "Nombre de trames like         : " << nbTotalTrames     << std::endl;
-    std::cout << "Nombre de trames bon crc      : " << nbBonsCRCs        << std::endl;
-    printf("\n");
-    std::cout << "Nombre de trames emises  (frames)  = " << nbBonsCRCs                                  << std::endl;
-
     printf("\n");
     std::cout << "Temps total : " << chrono::duration_cast<chrono::milliseconds>(end - start).count() << " ms" << std::endl;
-#ifdef _TIME_PROFILE_
-    std::cout << " -  timer_reception     = " << (timer_reception/1000/1000)     << " ms" << std::endl;
-    std::cout << " -  timer_conv_cplx     = " << (timer_conv_cplx/1000/1000)     << " ms" << std::endl;
-    std::cout << " -  timer_detecteur     = " << (timer_detecteur/1000/1000)     << " ms" << std::endl;
-    std::cout << " -  timer_extraction    = " << (timer_extraction/1000/1000)    << " ms" << std::endl;
-    std::cout << " -  timer_down_sampling = " << (timer_down_sampling/1000/1000) << " ms" << std::endl;
-    std::cout << " -  timer_demodulator   = " << (timer_demodulator/1000/1000)   << " ms" << std::endl;
-    std::cout << " -  timer_parsing       = " << (timer_parsing/1000/1000)       << " ms" << std::endl;
-#endif
     printf("\n");
 
 
@@ -615,8 +453,6 @@ int main(int argc, char* argv[])
 
 
     delete radio;
-    delete detect;
-    delete conv;
 
 	return 0;
 }

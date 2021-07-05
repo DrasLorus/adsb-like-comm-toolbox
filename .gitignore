@@ -32,3 +32,4 @@ src/systemc/received_image_fixed.bmp
 examples/build/*
 examples/cmake-build-debug/*
 examples/.idea/*
+cmake-build-relwithdebinfo/*
