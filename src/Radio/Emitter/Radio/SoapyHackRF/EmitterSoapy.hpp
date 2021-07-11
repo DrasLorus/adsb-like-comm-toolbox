@@ -33,7 +33,7 @@ public :
     void start_engine();
     void stop_engine ();
 
-    void reception(vector<complex<float> >& cbuffer);
+    bool reception(vector<complex<float> >& cbuffer);
 
     void reset();
 

@@ -95,13 +95,14 @@ int main(int argc, char* argv[])
     param.set("hackrf_amplifier", -1);
     param.set("hackrf_vga_gain",  -1);
     param.set("hackrf_lna_gain",  -1);
+    param.set("hackrf_gain",  -1);
 
     //
 
     param.set("rtlsdr_tuner_gain",  0); // mode gain automatique
 
-    param.set("mode_conv",        "scalar");
-    param.set("mode_corr",        "scalar");
+    param.set("mode_conv",        "AVX2");
+    param.set("mode_corr",        "AVX2");
 
     param.set("payload", 60);
 
@@ -131,8 +132,8 @@ int main(int argc, char* argv[])
                     {"fe",      required_argument,   NULL, 'e'}, // changer la frequence echantillonnage
 
                     {"amplifier", required_argument,  NULL, 'A'}, // changer la frequence echantillonnage
-                    {"vga_gain", required_argument,   NULL, 'V'}, // changer la frequence echantillonnage
-                    {"lna_gain", required_argument,   NULL, 'L'}, // changer la frequence echantillonnage
+                    {"vga_gain",  required_argument,   NULL, 'V'}, // changer la frequence echantillonnage
+                    {"lna_gain",  required_argument,   NULL, 'L'}, // changer la frequence echantillonnage
 
                     {"payload", required_argument,   NULL, 'p'}, // changer la frequence echantillonnage
 
@@ -175,10 +176,12 @@ int main(int argc, char* argv[])
 
             case 'V' :
                 param.set("hackrf_vga_gain",   std::stoi(optarg));
+                param.set("hackrf_gain",   std::stoi(optarg));
                 break;
 
             case 'L' :
                 param.set("hackrf_lna_gain",   std::stoi(optarg));
+                param.set("hackrf_gain",   std::stoi(optarg));
                 break;
 
             case 'p':
@@ -249,10 +252,10 @@ int main(int argc, char* argv[])
     printf("%s",KNRM);
     cout << endl;
 
-    vector<complex<float> > buffer   ( param.toDouble("fe")/2 ); // Notre buffer à nous dans le programme
+    vector<complex<float> > buffer   ( 65536 ); // Notre buffer à nous dans le programme
     vector<complex<float> > buffer_fichier;
-    vector<uint8_t        > detection( param.toDouble("fe")/2 ); // Notre buffer à nous dans le programme
-    vector<int8_t        > detection_int( param.toDouble("fe")/2 ); // Notre buffer à nous dans le programme
+    vector<uint8_t        > detection( buffer.size() ); // Notre buffer à nous dans le programme
+    vector<int8_t        > detection_int( buffer.size() ); // Notre buffer à nous dans le programme
 
     //
     // Selection du module SDR employé dans le programme

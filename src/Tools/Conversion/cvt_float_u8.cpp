@@ -32,9 +32,9 @@ void cvt_float_u8::execute(const float* buffer_in, uint8_t* buffer_out, const ui
 {
     for (uint32_t i = 0; i < n; i += 1)
     {
-        float value   = buffer_in[i];
-        float vmax    = (value > 255.0f ) ? 255.0f : value;
-        float vmin    = (vmax  <   0.0f ) ?   0.0f :  vmax;
+        float value   = 255.0f * buffer_in[i];
+        float vmax    = (value >= 255.0f ) ? 255.0f : value;
+        float vmin    = (vmax  <=   0.0f ) ?   0.0f :  vmax;
         buffer_out[i] = vmin;
     }
 }

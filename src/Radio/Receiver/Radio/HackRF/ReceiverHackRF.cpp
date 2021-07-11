@@ -15,8 +15,8 @@ ReceiverHackRF::ReceiverHackRF(float s_fc, float s_fe) : Receiver(s_fc, s_fe), b
     fech_hz   = s_fe;
     amplifier = false;
     antenna   = false;
-    vga_gain  = 16; // 30;    // 40; : validated values for adsb-like comm.
-    lna_gain  = 16; // 16;    // 32; : validated values for adsb-like comm.
+    vga_gain  = 40; // 30;    // 40; : validated values for adsb-like comm.
+    lna_gain  = 40; // 16;    // 32; : validated values for adsb-like comm.
 
     //
     // On veut une seconde de signal pour ne rien rater...
@@ -254,7 +254,7 @@ void ReceiverHackRF::stop_engine()
 }
 
 
-void ReceiverHackRF::reception(std::vector< std::complex<float> >& cbuffer, const uint32_t coverage)
+bool ReceiverHackRF::reception(std::vector< std::complex<float> >& cbuffer, const uint32_t coverage)
 {
     //
     // On gere le vieillissement du buffer d'echantillons !
@@ -303,10 +303,11 @@ void ReceiverHackRF::reception(std::vector< std::complex<float> >& cbuffer, cons
 
     for(uint32_t i = 0; i < toRead; i += 2)
     {
-        std::complex<float> value( (float)buf[i], (float)buf[i+1] );
+        std::complex<float> value( (float)buf[i] / 127.0f, (float)buf[i+1] / 127.0f );
         cbuffer[i/2 + coverage] = value;
     }
     delete[] buf;
+    return true;
 }
 
 

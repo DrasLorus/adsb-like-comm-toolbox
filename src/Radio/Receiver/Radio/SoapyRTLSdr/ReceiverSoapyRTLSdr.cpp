@@ -75,7 +75,9 @@ ReceiverSoapyRTLSdr::ReceiverSoapyRTLSdr(const float s_fc, const float s_fe) : R
         printf("[%g Hz -> %g Hz], ", ranges[i].minimum(), ranges[i].maximum());
     printf("\n");
 
+    std::cout << "Current sample rate : " << get_sample_rate() << std::endl;
     set_sample_rate( s_fe );
+    std::cout << "Current sample rate : " << get_freq() << std::endl;
     set_freq       ( s_fc );
     set_tuner_gain (0 );
 
@@ -118,7 +120,12 @@ void ReceiverSoapyRTLSdr::initialize()
 
 void ReceiverSoapyRTLSdr::set_freq(const double value)
 {
-    sdr->setFrequency( SOAPY_SDR_RX, 0, value );
+    try{
+        sdr->setFrequency( SOAPY_SDR_RX, 0, value );
+    }catch(exception& e)
+    {
+
+    }
     printf("[ FREQUENCY : %f ]\n", get_freq());
 }
 
@@ -155,7 +162,7 @@ double ReceiverSoapyRTLSdr::get_tuner_gain( )
 }
 
 
-void ReceiverSoapyRTLSdr::reception( std::vector< std::complex<float> >& cbuffer, const uint32_t coverage)
+bool ReceiverSoapyRTLSdr::reception( std::vector< std::complex<float> >& cbuffer, const uint32_t coverage)
 {
     //
     // On gere le vieillissement du buffer d'echantillons !
@@ -195,6 +202,7 @@ void ReceiverSoapyRTLSdr::reception( std::vector< std::complex<float> >& cbuffer
         pbuff[i] = pbuff[i] * 127.0f;
     }
 #endif
+    return true;
 }
 
 

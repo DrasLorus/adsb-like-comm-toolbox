@@ -167,7 +167,7 @@ bool EmitterSoapy::get_antenna_enable( )
 }
 
 
-void EmitterSoapy::reception( std::vector< std::complex<float> >& cbuffer)
+bool EmitterSoapy::reception( std::vector< std::complex<float> >& cbuffer)
 {
     uint32_t to_read = cbuffer.size();
     uint32_t nb_read = 0;
@@ -196,10 +196,11 @@ void EmitterSoapy::reception( std::vector< std::complex<float> >& cbuffer)
         pbuff[i] = pbuff[i] * 127.0f;
     }
 #endif
+    return true;
 }
 
 
-void EmitterUSRP::emission(std::vector<int8_t>& cbuffer )
+void EmitterSoapy::emission(std::vector<int8_t>& cbuffer)
 {
 #if 0
     uhd::tx_metadata_t md;                  // Des metadata

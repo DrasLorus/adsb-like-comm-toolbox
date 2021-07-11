@@ -10,7 +10,6 @@ Receiver::Receiver(float s_fc, float s_fe){
     //
     const uint32_t echanti = (2 * s_fe);
     const uint32_t symbols = (echanti + 262144 - 1) / 262144;
-    N                      = 262144 * symbols;
 }
 
 

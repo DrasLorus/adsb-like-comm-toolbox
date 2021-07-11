@@ -85,7 +85,7 @@ int main(int argc, char* argv[])
 
     param.set("payload", 16);
 
-    param.set("sleep_time",   100000);
+    param.set("sleep_time",   1000);
 
     param.set("verbose",   false);
 
@@ -347,7 +347,7 @@ int main(int argc, char* argv[])
     uint32_t nFrames = 0;
     while( isFinished == false )
     {
-        usleep( sleep_time );
+//        usleep( sleep_time );
 
         for( uint32_t i = 0; i < payload; i +=1 )
             f.data(i, i + nFrames);
@@ -360,8 +360,6 @@ int main(int argc, char* argv[])
         }
 
         f.get_frame_bits( buff_1 );
-
-
 
         ppm.execute( buff_1, buff_2 );
         up.execute ( buff_2, buff_3 );

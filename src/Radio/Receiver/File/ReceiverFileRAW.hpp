@@ -14,7 +14,7 @@ public :
 	~ReceiverFileRAW();
 
     void initialize();
-    void reception(vector<complex<float> >& cbuffer, const uint32_t coverage = 0);
+    bool reception(vector<complex<float> >& cbuffer, const uint32_t coverage = 0);
     void reset();
 
     void start_engine();

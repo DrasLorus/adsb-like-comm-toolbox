@@ -71,7 +71,7 @@ void ReceiverFileUHD::initialize()
 }
 
 
-void ReceiverFileUHD::reception(std::vector< std::complex<float> >& cbuffer, const uint32_t coverage)
+bool ReceiverFileUHD::reception(std::vector< std::complex<float> >& cbuffer, const uint32_t coverage)
 {
 
     if( cbuffer.size() != data.size() ) // Nombre de symbols et non d'echantillons
@@ -85,6 +85,7 @@ void ReceiverFileUHD::reception(std::vector< std::complex<float> >& cbuffer, con
         cbuffer[i] = data[i];
     }
     _alive = false; // On stop le prog
+    return true;
 }
 
 

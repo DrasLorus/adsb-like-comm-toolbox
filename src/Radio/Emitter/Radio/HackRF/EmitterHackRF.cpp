@@ -258,6 +258,7 @@ void EmitterHackRF::emission(std::vector<int8_t>& cbuffer )
         printf("(EE) We got an issue when the data set was loaded in the buffer...\n");
         exit( EXIT_FAILURE );
     }
+    const std::lock_guard<std::mutex> lock(g_i_mutex);
 
     while( buff.NumFreeElements() < byte_to_send )
     {

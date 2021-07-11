@@ -44,7 +44,7 @@ public :
     void stop_engine ();
 
     void emission(vector<int8_t>& cbuffer);
-    void reception( std::vector< std::complex<float> >& cbuffer);
+    bool reception( std::vector< std::complex<float> >& cbuffer);
 
     void reset();
 

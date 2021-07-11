@@ -54,7 +54,8 @@ void DownSampling::execute(const std::vector<uint8_t>& ibuffer, std::vector<uint
         sum = (sum < -127) ? -127 : sum;
         obuffer[i] = sum;
 #else
-        obuffer[i] = (sum / scale);
+        obuffer[i] = (sum > 255) ? 255 : sum;
+//        obuffer[i] = (sum / scale);
 #endif
     }
 }

@@ -43,7 +43,7 @@ public :
     void start_engine();
     void stop_engine ();
 
-    void reception(vector<complex<float> >& cbuffer, const uint32_t coverage = 0);
+    bool reception(vector<complex<float> >& cbuffer, const uint32_t coverage = 0);
 
     void reset();
 

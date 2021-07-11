@@ -23,7 +23,7 @@ void ReceiverFileStreamRAW::initialize()
 }
 
 
-void ReceiverFileStreamRAW::reception(std::vector< std::complex<float> >& cbuffer, const uint32_t coverage)
+bool ReceiverFileStreamRAW::reception(std::vector< std::complex<float> >& cbuffer, const uint32_t coverage)
 {
     printf("ReceiverFileStreamRAW::reception() : cbuffer.size() = %lu | coverage = %u\n", cbuffer.size(), coverage);
 
@@ -81,6 +81,7 @@ void ReceiverFileStreamRAW::reception(std::vector< std::complex<float> >& cbuffe
     }
 #endif
     printf("ReceiverFileStreamRAW::reception() : nRead  = %u\n", nRead);
+    return true;
 }
 
 

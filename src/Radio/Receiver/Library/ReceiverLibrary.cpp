@@ -34,8 +34,8 @@ Receiver* ReceiverLibrary::allocate(Parameters& param)
     ) {
         ReceiverHackRF* r = new ReceiverHackRF(param.toDouble("fc"), param.toDouble("fe"));
         if( param.toInt("hackrf_amplifier") != -1 ) r->set_amp_enable( param.toInt("hackrf_amplifier") );
-        if( param.toInt("hackrf_vga_gain")  != -1 ) r->set_vga_gain  ( param.toInt("hackrf_vga_gain") );
-        if( param.toInt("hackrf_lna_gain")  != -1 ) r->set_lna_gain  ( param.toInt("hackrf_lna_gain") );
+        if( param.toInt("receiver_gain")  != -1 ) r->set_vga_gain  ( param.toInt("receiver_gain") );
+        if( param.toInt("receiver_gain")  != -1 ) r->set_lna_gain  ( param.toInt("receiver_gain") );
         radio = r;
 
     } else if(
@@ -44,8 +44,10 @@ Receiver* ReceiverLibrary::allocate(Parameters& param)
     ) {
         ReceiverSoapyHackRF* r = new ReceiverSoapyHackRF(param.toDouble("fc"), param.toDouble("fe"));
         if( param.toInt("hackrf_amplifier") != -1 ) r->set_amp_enable( param.toInt("hackrf_amplifier") );
-        if( param.toInt("hackrf_vga_gain")  != -1 ) r->set_vga_gain  ( param.toInt("hackrf_vga_gain") );
-        if( param.toInt("hackrf_lna_gain")  != -1 ) r->set_lna_gain  ( param.toInt("hackrf_lna_gain") );
+//        if( param.toInt("hackrf_vga_gain")  != -1 ) r->set_vga_gain  ( param.toInt("hackrf_vga_gain") );
+//        if( param.toInt("hackrf_lna_gain")  != -1 ) r->set_lna_gain  ( param.toInt("hackrf_lna_gain") );
+        if( param.toInt("receiver_gain")  != -1 ) r->set_vga_gain  ( param.toInt("receiver_gain") );
+        if( param.toInt("receiver_gain")  != -1 ) r->set_lna_gain  ( param.toInt("receiver_gain") );
         radio = r;
 
     } else if(
@@ -53,14 +55,17 @@ Receiver* ReceiverLibrary::allocate(Parameters& param)
             (type == "radio" && module == "soapyrtlsdr")
     ) {
         ReceiverSoapyRTLSdr* r = new ReceiverSoapyRTLSdr(param.toDouble("fc"), param.toDouble("fe"));
-        if( param.toInt("rtlsdr_tuner_gain")  != -1 )
-            r->set_tuner_gain( param.toDouble("rtlsdr_tuner_gain") );
+        if( param.toInt("receiver_gain")  != -1 )
+            r->set_tuner_gain( param.toDouble("receiver_gain") );
         radio = r;
 
     } else if(
             (type == "radio" && module == "usrp")
     ) {
         ReceiverUSRP* r = new ReceiverUSRP(param.toDouble("fc"), param.toDouble("fe"));
+        if( param.toInt("receiver_gain")  != -1 )
+            r->set_rx_gain( param.toInt("receiver_gain") );
+
         radio = r;
 
     //
@@ -82,6 +87,9 @@ Receiver* ReceiverLibrary::allocate(Parameters& param)
     //
     //
     } else if( type == "file-stream" && (module.find(".raw") != std::string::npos) ) {
+        ReceiverFileStreamRAW* r = new ReceiverFileStreamRAW(param.toString("filename"));
+        radio = r;
+    } else if( type == "file-stream" && (module.find(".cs8") != std::string::npos) ) {
         ReceiverFileStreamRAW* r = new ReceiverFileStreamRAW(param.toString("filename"));
         radio = r;
     }

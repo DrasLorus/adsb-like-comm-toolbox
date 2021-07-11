@@ -45,7 +45,7 @@ void ReceiverFileRAW::initialize()
 }
 
 
-void ReceiverFileRAW::reception(std::vector< std::complex<float> >& cbuffer, const uint32_t coverage)
+bool ReceiverFileRAW::reception(std::vector< std::complex<float> >& cbuffer, const uint32_t coverage)
 {
 
     if( cbuffer.size() != (data.size()/2) ) // Nombre de symbols et non d'echantillons
@@ -72,6 +72,7 @@ void ReceiverFileRAW::reception(std::vector< std::complex<float> >& cbuffer, con
         }
     }
     _alive = false; // On stop le prog
+    return true;
 }
 
 
