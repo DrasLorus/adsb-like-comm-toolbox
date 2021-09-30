@@ -54,8 +54,12 @@ bool CRC( const uint8_t trame[120]){
 
 #include "../../src/Processing/CplxModule/Library/CplxModuleLibrary.hpp"
 #include "../../src/Processing/Detector/Library/DetectorLibrary.hpp"
-#include "../../src/Chains/ADBS-like/Decoder/Decoder_ADBS_like_chain.hpp"
-#include "../../src/Chains/ADBS-like-fec/Decoder/Decoder_ADBS_FEC_chain.hpp"
+//#include "../../src/Chains/ADBS-like/Decoder/Decoder_ADBS_like_chain.hpp"
+//#include "../../src/Chains/ADBS-like-fec/Decoder/Decoder_ADBS_FEC_chain.hpp"
+#include "../../src/Processing/ADSBSynchro/RemoveADSBSynchro/RemoveADSBSynchro.hpp"
+#include "../../src/Processing/DataPacking/BitPacking/BitPacking.hpp"
+#include "../../src/Processing/CRC32b/CheckCRC32b/CheckCRC32b.hpp"
+#include "../../src/Processing/CRC32b/RemoveCRC32b/RemoveCRC32b.hpp"
 
 
 //
@@ -122,7 +126,7 @@ int main(int argc, char* argv[])
 
     param.set("hackrf_amplifier", -1);
 
-    param.set("receiver_gain",      -1);
+    param.set("receiver_gain", -1);
 
     param.set("mode_conv",  "AVX2"); // scalar
     param.set("mode_corr",  "AVX2"); // scalar

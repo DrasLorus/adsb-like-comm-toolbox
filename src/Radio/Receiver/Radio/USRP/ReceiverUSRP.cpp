@@ -20,8 +20,10 @@ void ReceiverUSRP::initialize(){
 	usrp->set_rx_rate(fe);                         // Set de la fréquence d'échantillonnage
 	usrp->set_rx_freq(fc);             // Set de la fréquence porteuse
 	usrp->set_rx_antenna("RX2");
+	usrp->set_rx_gain(0);
 
-    uhd::stream_args_t stream_args("fc32", "sc16");  // Type des données à échantillonner (ici complexes float 64 - 32 bits par voie)
+    uhd::stream_args_t stream_args("fc32", "sc16");
+    // Type des données à échantillonner (ici complexes float 64 - 32 bits par voie)
 	rx_stream = usrp->get_rx_stream(stream_args);    // Pointeur sur les data reçues
 
     cout << "[UHD] Clock source is set to        : internal]" << endl;
@@ -137,10 +139,10 @@ bool ReceiverUSRP::reception(vector<complex<float> >& buffer, const uint32_t cov
 //    {
 //        buffer[i] = buffer[i] * 127.0f;
 //    }
-    //for(int i = 0; i < nSamples; i += 1)
-    //{
-    //    cout << i << " - " << buffer[i] << std::endl;
-    //}
+//    for(int i = 0; i < 16; i += 1)
+//    {
+//        cout << i << " - " << buffer[i] << std::endl;
+//    }
 //  std::cout << "[ GOING BACK TO WORK ]" << std::endl;
 
 #if 0

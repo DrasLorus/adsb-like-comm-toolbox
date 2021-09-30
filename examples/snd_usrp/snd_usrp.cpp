@@ -1,9 +1,10 @@
+
+
 #include <chrono>
 #include <getopt.h>
 #include <csignal>
 #include <unistd.h>
 #include <fstream>
-
 
 #include <chrono>
 #include <string>
@@ -381,8 +382,6 @@ int main(int argc, char* argv[])
     PPM_mod           i_ppm;
     UpSampling        i_up(2);
     IQ_Insertion      i_iq;
-
-    const uint32_t sleep_time = param.toInt("sleep_time");
 
     printf("(II) Launching the emitter application :\n");
     printf("(II) -> Modulation frequency    : %4d MHz\n",    (uint32_t)(param.toDouble("fc"     )/1000000.0));

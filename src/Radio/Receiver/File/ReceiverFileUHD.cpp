@@ -12,12 +12,13 @@ ReceiverFileUHD::~ReceiverFileUHD()
 
 }
 
+char ZERO[] = "0";
 inline int getnum(char* line, char** real, char** img)
 {
     *real = strtok(line, " \n");
-    if(*real == NULL) *real = "0";
+    if(*real == NULL) *real = ZERO;
     *img = strtok(NULL, "\n");
-    if (*img == NULL) *img = "0";
+    if (*img == NULL) *img = ZERO;
     return 0;
 }
 

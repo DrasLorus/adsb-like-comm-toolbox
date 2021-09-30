@@ -31,12 +31,6 @@ void ReceiverFileRAW::initialize()
     data.resize( fileSize );
     fread(data.data(), 1, fileSize, stream);
 
-    // Construction de l'histogramme
-//    for(uint32_t i = 0; i < fileSize; i += 1 )
-//        array[ 128 + data[i] ] += 1;
-    // Fin de histogramme
-
-
     auto stop  = chrono::high_resolution_clock::now();
     auto timer = chrono::duration_cast<chrono::milliseconds>(stop - start).count();
     std::cout << "(II) Time required to load the " << (fileSize/1024) << " kB is equal to " << timer << " ms" << std::endl;

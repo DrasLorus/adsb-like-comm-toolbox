@@ -1,17 +1,20 @@
-#ifndef _ReceiverFileStreamRAW_
-#define _ReceiverFileStreamRAW_
+#ifndef _ReceiverFileBZ2_
+#define _ReceiverFileBZ2_
 
 #include "../Receiver.hpp"
+#include <bzlib.h>
 
-class ReceiverFileStreamRAW : public Receiver{
+class ReceiverFileBZ2 : public Receiver{
 private:
     vector<uint8_t> buffer;
-    FILE* stream;
+    FILE*   stream;
+    BZFILE* streaz;
+
     bool unsigned_mode;
 
 public :
-    ReceiverFileStreamRAW(std::string filen, const bool _unsigned_ = false);
-	~ReceiverFileStreamRAW();
+    ReceiverFileBZ2(std::string filen, const bool _unsigned_ = false);
+	~ReceiverFileBZ2();
 
     void initialize();
     bool reception(vector<complex<float> >& cbuffer, const uint32_t coverage = 0);

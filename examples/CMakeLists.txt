@@ -6,10 +6,15 @@ set(CMAKE_CXX_FLAGS "                   -Wall -Ofast -march=native -mtune=native
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/local/Cellar/uhd/4.0.0.0/include -Wno-#pragma-messages")    # UHD
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Rpass=loop-vectorize")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/local/include")
-
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/opt/homebrew/Cellar/uhd/4.0.0.0_2/include")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/opt/homebrew/Cellar/hackrf/2021.03.1/include")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/opt/homebrew/Cellar/soapysdr/0.8.1/include")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/opt/homebrew/Cellar/boost/1.76.0/include")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/opt/homebrew/opt/bzip2/include")
 
 # x86 part
 set(CMAKE_EXE_LINKER_FLAGS "-L/usr/local/lib") # UHD
+
 #set(CMAKE_EXE_LINKER_FLAGS "                          /usr/local/lib/libboost_filesystem-mt.dylib") # UHD
 #set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /usr/local/lib/libboost_system-mt.dylib") # UHD
 #set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /usr/local/opt/hackrf/lib/libhackrf.a") # UHD
@@ -22,12 +27,17 @@ set(CMAKE_EXE_LINKER_FLAGS "-L/usr/local/lib") # UHD
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -luhd") # UHD
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lhackrf") # UHD
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lSoapySDR") # SoapySDR
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/opt/homebrew/Cellar/uhd/4.0.0.0_2/lib") # UHD
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/opt/homebrew/Cellar/hackrf/2021.03.1/lib") # UHD
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/opt/homebrew/Cellar/soapysdr/0.8.1/lib") # UHD
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/opt/homebrew/opt/bzip2/lib") # UHD
 
 set(CMAKE_CXX_STANDARD 17)
 
+
 ########################################################################################################################
 
-project(debug_rcv_usrp)
+project(rcv_usrp)
 
 set(SOURCE_FILES
         ../src/Processing/CRC32b/CRC/CRC32b.cpp
@@ -49,12 +59,14 @@ set(SOURCE_FILES
         ../src/Radio/Receiver/Receiver.cpp
         ../src/Radio/Receiver/Radio/SoapyRTLSdr/ReceiverSoapyRTLSdr.cpp
         ../src/Radio/Receiver/Radio/SoapyHackRF/ReceiverSoapyHackRF.cpp
+        ../src/Radio/Receiver/Radio/SoapyUHD/ReceiverSoapyUHD.cpp
         ../src/Radio/Receiver/Radio/HackRF/ReceiverHackRF.cpp
         ../src/Radio/Receiver/Radio/USRP/ReceiverUSRP.cpp
 
         ../src/Radio/Receiver/File/ReceiverFileRAW.cpp
         ../src/Radio/Receiver/File/ReceiverFileStreamRAW.cpp
         ../src/Radio/Receiver/File/ReceiverFileUHD.cpp
+        ../src/Radio/Receiver/File/ReceiverFileBZ2.cpp
         ../src/Radio/Receiver/Library/ReceiverLibrary.cpp
 
         ../src/Processing/PPM/demod/PPM_demod.cpp
@@ -73,11 +85,12 @@ set(SOURCE_FILES
         rcv_usrp/rcv_usrp.cpp
         )
 
-add_executable(debug_rcv_usrp ${SOURCE_FILES})
+add_executable(rcv_usrp ${SOURCE_FILES})
 
-target_link_libraries(debug_rcv_usrp uhd)
-target_link_libraries(debug_rcv_usrp hackrf)
-target_link_libraries(debug_rcv_usrp SoapySDR)
+target_link_libraries(rcv_usrp uhd)
+target_link_libraries(rcv_usrp hackrf)
+target_link_libraries(rcv_usrp SoapySDR)
+target_link_libraries(rcv_usrp bz2)
 
 ########################################################################################################################
 
@@ -103,12 +116,14 @@ set(SOURCE_FILES
         ../src/Radio/Receiver/Receiver.cpp
         ../src/Radio/Receiver/Radio/SoapyRTLSdr/ReceiverSoapyRTLSdr.cpp
         ../src/Radio/Receiver/Radio/SoapyHackRF/ReceiverSoapyHackRF.cpp
+        ../src/Radio/Receiver/Radio/SoapyUHD/ReceiverSoapyUHD.cpp
         ../src/Radio/Receiver/Radio/HackRF/ReceiverHackRF.cpp
         ../src/Radio/Receiver/Radio/USRP/ReceiverUSRP.cpp
 
         ../src/Radio/Receiver/File/ReceiverFileRAW.cpp
         ../src/Radio/Receiver/File/ReceiverFileStreamRAW.cpp
         ../src/Radio/Receiver/File/ReceiverFileUHD.cpp
+        ../src/Radio/Receiver/File/ReceiverFileBZ2.cpp
         ../src/Radio/Receiver/Library/ReceiverLibrary.cpp
 
         ../src/Processing/PPM/demod/PPM_demod.cpp
@@ -132,6 +147,7 @@ add_executable(rcv_adsb ${SOURCE_FILES})
 target_link_libraries(rcv_adsb uhd)
 target_link_libraries(rcv_adsb hackrf)
 target_link_libraries(rcv_adsb SoapySDR)
+target_link_libraries(rcv_adsb bz2)
 
 ########################################################################################################################
 
@@ -157,12 +173,14 @@ set(SOURCE_FILES
         ../src/Radio/Receiver/Receiver.cpp
         ../src/Radio/Receiver/Radio/SoapyRTLSdr/ReceiverSoapyRTLSdr.cpp
         ../src/Radio/Receiver/Radio/SoapyHackRF/ReceiverSoapyHackRF.cpp
+        ../src/Radio/Receiver/Radio/SoapyUHD/ReceiverSoapyUHD.cpp
         ../src/Radio/Receiver/Radio/HackRF/ReceiverHackRF.cpp
         ../src/Radio/Receiver/Radio/USRP/ReceiverUSRP.cpp
 
         ../src/Radio/Receiver/File/ReceiverFileRAW.cpp
         ../src/Radio/Receiver/File/ReceiverFileStreamRAW.cpp
         ../src/Radio/Receiver/File/ReceiverFileUHD.cpp
+        ../src/Radio/Receiver/File/ReceiverFileBZ2.cpp
         ../src/Radio/Receiver/Library/ReceiverLibrary.cpp
 
         ../src/Processing/PPM/demod/PPM_demod.cpp
@@ -186,10 +204,11 @@ add_executable(rcv_calibration ${SOURCE_FILES})
 target_link_libraries(rcv_calibration uhd)
 target_link_libraries(rcv_calibration hackrf)
 target_link_libraries(rcv_calibration SoapySDR)
+target_link_libraries(rcv_calibration bz2)
 
 ########################################################################################################################
 
-project(debug_snd_usrp)
+project(snd_usrp)
 
 set(SOURCE_FILES
         ../src/RingBuff/RingBuff.cpp
@@ -214,9 +233,9 @@ set(SOURCE_FILES
         snd_usrp/snd_usrp.cpp
         )
 
-add_executable(debug_snd_usrp ${SOURCE_FILES})
+add_executable(snd_usrp ${SOURCE_FILES})
 
-target_link_libraries(debug_snd_usrp uhd)
-target_link_libraries(debug_snd_usrp hackrf)
-target_link_libraries(debug_snd_usrp SoapySDR)
-
+target_link_libraries(snd_usrp uhd)
+target_link_libraries(snd_usrp hackrf)
+target_link_libraries(snd_usrp SoapySDR)
+target_link_libraries(snd_usrp bz2)

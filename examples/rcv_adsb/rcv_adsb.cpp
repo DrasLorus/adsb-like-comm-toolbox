@@ -16,12 +16,15 @@
 #include <getopt.h>
 #include <signal.h>
 
+#include "type_aircraft.hpp"
+
 #include "../../src/Tools/Parameters/Parameters.hpp"
 #include "../../src/Tools/CTickCounter/CTickCounter.hpp"
 #include "../../src/Tools/Conversion/cvt_float_u8.hpp"
 
 #include "../../src/Radio/Receiver/Library/ReceiverLibrary.hpp"
 
+//#define _TIME_PROFILE_
 
 //
 //  CplxModule des nombres complexes => module flottant
@@ -29,8 +32,12 @@
 
 #include "../../src/Processing/CplxModule/Library/CplxModuleLibrary.hpp"
 #include "../../src/Processing/Detector/Library/DetectorLibrary.hpp"
-#include "../../src/Chains/ADBS-like/Decoder/Decoder_ADBS_like_chain.hpp"
-#include "../../src/Chains/ADBS-like-fec/Decoder/Decoder_ADBS_FEC_chain.hpp"
+//#include "../../src/Chains/ADBS-like/Decoder/Decoder_ADBS_like_chain.hpp"
+//#include "../../src/Chains/ADBS-like-fec/Decoder/Decoder_ADBS_FEC_chain.hpp"
+#include "../../src/Processing/ADSBSynchro/RemoveADSBSynchro/RemoveADSBSynchro.hpp"
+#include "../../src/Processing/DataPacking/BitPacking/BitPacking.hpp"
+#include "../../src/Processing/CRC32b/CheckCRC32b/CheckCRC32b.hpp"
+#include "../../src/Processing/CRC32b/RemoveCRC32b/RemoveCRC32b.hpp"
 
 
 //
@@ -47,6 +54,7 @@ long double toRadians(const long double degree) {
     long double one_deg = (M_PI) / 180;
     return (one_deg * degree);
 }
+
 
 double cprMod(double a, double b)
 {
@@ -254,193 +262,7 @@ long double distance(long double lat1, long double long1,
     return ans;
 }
 
-class Avion {
-private:
-    float altitude;
 
-    float speed_h;
-    float speed_v;
-    float angle;
-
-    float dist_cur;
-    float dist_min;
-    float dist_max;
-    float dist_curr;
-
-    int32_t OACI;
-    char name[9];
-
-    int32_t updates;
-
-    std::chrono::time_point<std::chrono::system_clock> lastUpdate;
-    bool modified;
-    bool GNSS;
-
-public:
-
-    std::vector<float> list_long;
-    std::vector<float> list_lat;
-
-public:
-
-    Avion(int32_t _OACI) {
-        speed_h  = 0.0f;
-        speed_v  = 0.0f;
-        angle    = 0.0f;
-        dist_cur = 0.0f;
-        dist_min = 0.0f;
-        dist_max = 0.0f;
-        OACI     = _OACI;
-        updates  = 0;
-        altitude = 0.0f;
-        dist_curr = 0.0f;
-        modified = false;
-        GNSS     = false;
-
-        for (uint32_t i = 0; i < 8; i += 1)
-            name[i] = '-';
-        name[8] = 0;
-    }
-
-    void set_GNSS_mode(const bool value) {
-        GNSS = value;
-    }
-
-    void update_distance()
-    {
-        const float lat = get_latitude();
-        const float lon = get_longitude();
-        dist_curr       = distance(lat, lon, 44.820783, -0.501887);
-        if( dist_max != 0 )
-        {
-            dist_max        = ( dist_max > dist_curr ) ? dist_max : dist_curr;
-            dist_min        = ( dist_min < dist_curr ) ? dist_min : dist_curr;
-        }else{
-            dist_max        = dist_curr;
-            dist_min        = dist_curr;
-        }
-    }
-
-    float get_latitude()
-    {
-        if( list_lat.size() != 0 )
-            return list_lat.at( list_lat.size() - 1 );
-        else
-            return 0.0f;
-    }
-
-    void set_latitude(const float value) {
-        list_lat.push_back( value );
-    }
-
-    float get_longitude()
-    {
-        if( list_long.size() != 0 )
-            return list_long.at( list_long.size() - 1 );
-        else
-            return 0.0f;
-    }
-
-    void set_longitude(const float value)
-    {
-        list_long.push_back( value );
-    }
-
-    float get_speed_horizontal() {
-        return speed_h;
-    }
-
-    void set_speed_horizontal(const float value) {
-        speed_h = value;
-    }
-
-    float get_speed_vertical() {
-        return speed_v;
-    }
-
-    void set_speed_vertical(const float value) {
-        speed_v = value;
-    }
-
-    float get_angle() {
-        return angle;
-    }
-
-    void set_angle(const float value) {
-        angle = value;
-    }
-
-    float get_altitude() {
-        return altitude;
-    }
-
-    void set_altitude(const float value) {
-        altitude = value;
-    }
-
-    float get_dist_cur() {
-        return dist_curr;
-    }
-
-    float get_dist_min() {
-        return dist_min;
-    }
-
-    float get_dist_max() {
-        return dist_max;
-    }
-
-    int32_t get_OACI() {
-        return OACI;
-    }
-
-    char *get_name() {
-        return name;
-    }
-
-    void set_name(const char *value) {
-        strcpy(name, value);
-    }
-
-    int32_t get_messages() {
-        return updates;
-    }
-
-    void update() {
-        lastUpdate = std::chrono::system_clock::now();
-        updates += 1;
-        modified = true;
-    }
-
-    void print() {
-        if( modified ) green();
-        printf("%06X | %s | ", get_OACI(), get_name());
-
-        if(get_latitude() != 0) printf("%9.6f | %9.6f | ", get_latitude(), get_longitude());
-        else                    printf("--------- | --------- | ");
-
-        printf("%4d km/h | %4d m/mn | %4d° | ", (int32_t) get_speed_horizontal(),
-               (int32_t) get_speed_vertical(), (int32_t) get_angle());
-
-        if( GNSS ) printf("GNSS | ");
-        else       printf("BARO | ");
-
-        if( get_altitude() != 0 ) printf("%5d pds | ",   (int32_t) get_altitude());
-        else                      printf("--------- | ");
-
-        printf("%5d km [%3d,%3d] | ", (int32_t) get_dist_cur(), (int32_t) get_dist_min(), (int32_t) get_dist_max());
-        printf("%6d | ", get_messages());
-        const auto curr   = std::chrono::system_clock::now();
-        const int32_t seconds = std::chrono::duration_cast<std::chrono::seconds>(curr - lastUpdate).count();
-        if( seconds > 60 )
-            printf("%5d mn |\n", seconds/60);
-        else
-            printf("%6d s |\n", seconds);
-        if( modified ) black();
-        modified = false;
-    }
-
-};
 
 template<int offset, int nbBits>
 uint32_t extract_bits(const uint32_t data)
@@ -676,6 +498,8 @@ void show(std::vector<float> &v) {
     printf("\n");
 }
 
+#include "Avion.hpp"
+
 /*   ============================== MAIN =========================== */
 /*
 	4 ech = 1 symb
@@ -707,7 +531,6 @@ int main(int argc, char *argv[]) {
     uint32_t nbBonsCRCs_1x   = 0;
     uint32_t nbBonsCRCs_2x   = 0;
     uint32_t nbBonsCRCs_llr  = 0;
-    uint32_t nbZeroCRCs      = 0;
     uint32_t nbStrangeFrames = 0;
 
     int c; //getopt
@@ -724,9 +547,17 @@ int main(int argc, char *argv[]) {
 
     param.set("receiver_gain", -1);
 
+#if defined(__ARM_NEON)
+    param.set("mode_conv", "NEON"); // scalar
+    param.set("mode_corr", "NEON"); // scalar
+#elif defined(__AVX2__)
     param.set("mode_conv", "AVX2"); // scalar
     param.set("mode_corr", "AVX2"); // scalar
-
+#else
+    param.set("mode_conv", "scalar"); // scalar
+    param.set("mode_corr", "scalar"); // scalar
+#endif
+    
     param.set("payload", 60);
 
     param.set("verbose", 0);
@@ -905,7 +736,7 @@ int main(int argc, char *argv[]) {
     cout << endl;
 
     // param.toDouble("fe")/8
-    vector<complex<float> > buffer(4 * 65536); // Notre buffer à nous dans le programme
+    vector<complex<float> > buffer(65536); // Notre buffer à nous dans le programme
 
     //
     // Selection du module SDR employé dans le programme
@@ -1008,12 +839,12 @@ int main(int argc, char *argv[]) {
     vector<uint8_t> vec_sync (112);
     vector<uint8_t> vec_pack(14);
 
-    DownSampling o_down(2);
-    PPM_demod o_ppm;
+    DownSampling      o_down(2);
+    PPM_demod         o_ppm;
     RemoveADSBSynchro o_sync;
-    BitPacking o_pack;
-    CheckCRC32b o_ccrc;
-    RemoveCRC32b c_rcrc;
+    BitPacking        o_pack;
+    CheckCRC32b       o_ccrc;
+    RemoveCRC32b      c_rcrc;
 
 
 //    Decoder_chain* dec_chain;
@@ -1051,7 +882,7 @@ int main(int argc, char *argv[]) {
     }
 
     bool firstAcq = true;
-    const bool mode_inter = param.toBool("mode_inter");
+//    const bool mode_inter = param.toBool("mode_inter");
 
     uint32_t stream_ptr = 0;
 
@@ -1125,8 +956,9 @@ int main(int argc, char *argv[]) {
         const uint32_t length = (buffer_abs.size() - coverage);
         for (uint32_t k = 0; k < length; k += 1) {
 
-            float s = buffer_detect[k];
-            if (s > ps_min) {
+            float score = buffer_detect[k];
+            if (score > ps_min)
+            {
 
                 //
                 // Le score de la position k depasse le score minimum fixé par l'utilisateur
@@ -1180,7 +1012,7 @@ int main(int argc, char *argv[]) {
                 // On stocke les données pour une utilisation ultérieure
                 //
                 if( file_frames_bin != nullptr ) {
-                    if(crc_initial) fprintf(file_frames_bin, "%5d | OK | [", nbTramesDetectees);
+                         if(crc_initial ) fprintf(file_frames_bin, "%5d | OK | [", nbTramesDetectees);
                     else            fprintf(file_frames_bin, "%5d | KO | [", nbTramesDetectees);
                     for (int x = 0; x < vec_sync.size() - 1; x += 1)
                         fprintf(file_frames_bin, "%d,", vec_sync[x]);
@@ -1201,36 +1033,17 @@ int main(int argc, char *argv[]) {
                             vec_demod[j + 8] = !vec_demod[j + 8];       // On inverse le bit
                             vec_sync [j    ] = !vec_sync [j    ];       // On inverse le bit
 
+#if 0
                             yellow();
                             printf("%6d : %6d | [ !!! BIT FLIP TECHNIQUE SAVED A FRAME !!! ] \n", loop_counter, k);
                             black();
+#endif
                             break;
                         }
 
                         flipbit( vec_pack.data(), j );
                     }
                 }
-
-//#define _BRUTE_FORCE_LLR_
-#ifdef  _BRUTE_FORCE_LLR_
-                if ( (ok_fast == false) && (brute_force == true) )
-                {
-                    std::vector<float> vec_score (112);
-                    for(int32_t ii = 16; ii < 240; ii += 2)
-                    {
-                        const float diff = vec_down[ii] - vec_down[ii + 1];
-                        const float abso = std::abs(diff);
-                        vec_score[(ii / 2) - 8] = abso;
-                    }
-
-                    sort(vec_score.begin(), vec_score.end());
-
-                    for(int32_t ii = 0; ii < vec_score.size(); ii += 1)
-                        printf("%3d : (%17.13f)\n", ii, vec_score[ii]);
-                    exit( 0 );
-
-                }
-#endif
 
 #if 0
                 if ( (ok_fast == false) && (brute_force == true) )
@@ -1267,6 +1080,7 @@ int main(int argc, char *argv[]) {
                 }
 #endif
 
+                
 #define _BRUTE_FORCE_2x_
                 bool crc_brute_2x = false;
 #ifdef _BRUTE_FORCE_2x_
@@ -1290,11 +1104,12 @@ int main(int argc, char *argv[]) {
                                 vec_sync [ii    ] = !vec_sync [ii    ]; // On inverse le bit
                                 vec_demod[jj + 8] = !vec_demod[jj + 8]; // On inverse le bit
                                 vec_sync [jj    ] = !vec_sync [jj    ]; // On inverse le bit
-
+#if 0
                                 magenta();
                                 printf("%6d : %6d | [ !!! 2x BIT FLIP TECHNIQUE SAVED A FRAME !!! ] \n", loop_counter, k);
                                 black();
-                                o_pack.execute(vec_sync, vec_pack);
+#endif
+//                                o_pack.execute(vec_sync, vec_pack);
                                 break;
                             }
 
@@ -1308,15 +1123,46 @@ int main(int argc, char *argv[]) {
                 }
 #endif
 
+                
+#define _BRUTE_FORCE_LLR_
+#ifdef  _BRUTE_FORCE_LLR_
+                bool crc_brute_llr = false;
+                if ( (crc_initial == false) && (crc_brute_1x == false) && (crc_brute_2x == false) && (brute_force_llr == true)  )
+                {
+                    std::vector<float> vec_score (112);
+                    for(int32_t ii = 16; ii < 240; ii += 2)
+                    {
+                        const float diff = vec_down[ii] - vec_down[ii + 1];
+                        const float abso = std::abs(diff);
+                        vec_score[(ii / 2) - 8] = abso;
+                    }
+
+                    sort(vec_score.begin(), vec_score.end());
+
+                    for(int32_t ii = 0; ii < vec_score.size(); ii += 1)
+                        printf("%3d : (%17.13f)\n", ii, vec_score[ii]);
+                    
+                    crc_brute_llr = true;
+
+                    exit( 0 );
+                }
+#endif
+
                 const bool crc_is_ok  = ((crc_initial == true)  || (crc_brute_1x == true) || (crc_brute_2x == true));
                 nbBonsCRCs     += crc_is_ok;
-                nbBonsCRC_init += (crc_initial  == true);
-                nbBonsCRCs_1x  += (crc_brute_1x == true);
-                nbBonsCRCs_2x  += (crc_brute_2x == true);
-
+                nbBonsCRC_init += (crc_initial   == true);
+                nbBonsCRCs_1x  += (crc_brute_1x  == true);
+                nbBonsCRCs_2x  += (crc_brute_2x  == true);
+                nbBonsCRCs_llr += (crc_brute_llr == true);
 
                 if ((crc_is_ok == true) || (crc_is_ok == false && verbose >= 2))
                 {
+                    char* crc_show;
+                         if( crc_initial   == true ) crc_show = "\x1B[32mOK\x1B[0m";
+                    else if( crc_brute_1x  == true ) crc_show = "\x1B[33mOK\x1B[0m";
+                    else if( crc_brute_2x  == true ) crc_show = "\x1B[35mOK\x1B[0m";
+                    else if( crc_brute_llr == true ) crc_show = "\x1B[36mOK\x1B[0m";
+//                    printf("%d %d %d %d => %s\n", crc_initial, nbBonsCRCs_1x, nbBonsCRCs_2x, nbBonsCRCs_llr, crc_show);
 
                     if( verbose >= 1 )
                     {
@@ -1339,11 +1185,6 @@ int main(int argc, char *argv[]) {
                             continue;
                         }
 
-                        if (dump_decoded_frame && (dump_resume == false))
-                        {
-
-                        }
-
                         Avion *ptr_avion = liste_m[oaci_value];
                         if (ptr_avion == nullptr) {
                             ptr_avion = new Avion(oaci_value);
@@ -1351,8 +1192,18 @@ int main(int argc, char *argv[]) {
                             liste_v.push_back(ptr_avion);
                         }
                         ptr_avion->update();
+                        ptr_avion->set_score( score );
 
-                        if ((type_frame >= 1) && (type_frame <= 4)) {
+                        if ((type_frame >= 1) && (type_frame <= 4))
+                        {
+                            const int32_t type_airc = pack_bits(vec_sync.data() + 37, 3);
+                            const int32_t typeAricraft = toCode( type_frame, type_airc );
+                            if( typeAricraft == -1 )
+                            {
+                                nbStrangeFrames += 1;
+                                continue;
+                            }
+
                             const char lut[] = "#ABCDEFGHIJKLMNOPQRSTUVWXYZ##### ###############0123456789######";
                             char caractere[9];
                             caractere[0] = lut[ pack_bits(vec_sync.data() + 40, 6) ];
@@ -1366,22 +1217,24 @@ int main(int argc, char *argv[]) {
                             caractere[8] = 0;
 
                             if (dump_decoded_frame && (dump_resume == false))
-                                printf("| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d | %s |          |      |           |           |     |         |         |       |  OK |\n", nbBonsCRCs, loop_counter, k, s, df_value, oaci_value, type_frame, caractere);
+                                printf("| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d | %s |          |      |           |           |     |         |         |       |  %s |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame, caractere, crc_show);
                             if( file_frames_dec != nullptr )
-                                fprintf(file_frames_dec, "| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d | %s |          |      |           |           |     |         |         |       |  OK |\n", nbBonsCRCs, loop_counter, k, s, df_value, oaci_value, type_frame, caractere);ptr_avion->set_name(caractere);
+                                fprintf(file_frames_dec, "| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d | %s |          |      |           |           |     |         |         |       |  OK |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame, caractere);
+
+                            ptr_avion->set_type(typeAricraft);
+                            ptr_avion->set_name(caractere);
                         }
 
                         if ((type_frame >= 5) && (type_frame <= 8) )
                         {
                             if (dump_decoded_frame && (dump_resume == false))
-                                printf("| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |          |      |           |           |     |         |         |       |  OK |\n", nbBonsCRCs, loop_counter, k, s, df_value, oaci_value, type_frame);
+                                printf("| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |          |      |           |           |     |         |         |       |  %s |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame, crc_show);
                             if( file_frames_dec != nullptr )
-                                fprintf(file_frames_dec, "| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |          |      |           |           |     |         |         |       |  OK |\n", nbBonsCRCs, loop_counter, k, s, df_value, oaci_value, type_frame);
+                                fprintf(file_frames_dec, "| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |          |      |           |           |     |         |         |       |  OK |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame);
                         }
 
                         if ((type_frame >= 9) && (type_frame <= 18) )
                         {
-
                             const int32_t upper = pack_bits(vec_sync.data() + 40, 7);
                             const int32_t incr  = pack_bits(vec_sync.data() + 47, 1);
                             const int32_t lower = pack_bits(vec_sync.data() + 48, 4);
@@ -1405,10 +1258,10 @@ int main(int argc, char *argv[]) {
 
 
                             if (dump_decoded_frame && (dump_resume == false)) {
-                                printf("| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |   %6d |    %d |  %8.5f |  %8.5f | %3d |         |         |       |  OK |\n", nbBonsCRCs, loop_counter, k, s, df_value, oaci_value, type_frame, (int32_t)altitude, CPR_format, final_lon, final_lat, dist);
+                                printf("| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |   %6d |    %d |  %8.5f |  %8.5f | %3d |         |         |       |  %s |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame, (int32_t)altitude, CPR_format, final_lon, final_lat, dist, crc_show);
                             }
                             if( file_frames_dec != nullptr )
-                                fprintf(file_frames_dec, "| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |   %6d |    %d |  %8.5f |  %8.5f | %3d |         |         |       |  OK |\n", nbBonsCRCs, loop_counter, k, s, df_value, oaci_value, type_frame, (int32_t)altitude, CPR_format, final_lon, final_lat, dist);
+                                fprintf(file_frames_dec, "| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |   %6d |    %d |  %8.5f |  %8.5f | %3d |         |         |       |  OK |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame, (int32_t)altitude, CPR_format, final_lon, final_lat, dist);
 
                             ptr_avion->set_altitude (altitude);
                             ptr_avion->set_GNSS_mode(false);
@@ -1441,9 +1294,9 @@ int main(int argc, char *argv[]) {
                                 if (vec_demod[39 + 37] == 1) Vr = -Vr; // en feet/min
                                 Vr = Vr * 0.3048;
                                 if (dump_decoded_frame && (dump_resume == false))
-                                    printf("| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |          |      |           |           |     |    %4d |    %4d |  %4d |  OK |\n", nbBonsCRCs, loop_counter, k, s, df_value, oaci_value, type_frame, (int32_t) speed, (int32_t) Vr, (int32_t) angle);
+                                    printf("| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |          |      |           |           |     |    %4d |    %4d |  %4d |  %s |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame, (int32_t) speed, (int32_t) Vr, (int32_t) angle, crc_show);
                                 if( file_frames_dec != nullptr )
-                                    fprintf(file_frames_dec, "| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |          |      |           |           |     |    %4d |    %4d |  %4d |  OK |\n", nbBonsCRCs, loop_counter, k, s, df_value, oaci_value, type_frame, (int32_t) speed, (int32_t) Vr, (int32_t) angle);
+                                    fprintf(file_frames_dec, "| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |          |      |           |           |     |    %4d |    %4d |  %4d |  OK |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame, (int32_t) speed, (int32_t) Vr, (int32_t) angle);
                                 ptr_avion->set_speed_horizontal(speed);
                                 ptr_avion->set_speed_vertical(Vr);
                                 ptr_avion->set_angle(angle);
@@ -1471,9 +1324,9 @@ int main(int argc, char *argv[]) {
                             const int32_t dist        = distance(final_lat, final_lon, ref_latitude, ref_longitude);
 
                             if (dump_decoded_frame && (dump_resume == false))
-                                printf("| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |   %6d |    %d |  %8.5f |  %8.5f | %3d |         |         |       |  OK |\n", nbBonsCRCs, loop_counter, k, s, df_value, oaci_value, type_frame, (int32_t)altitude, CPR_format, final_lon, final_lat, dist);
+                                printf("| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |   %6d |    %d |  %8.5f |  %8.5f | %3d |         |         |       |  %s |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame, (int32_t)altitude, CPR_format, final_lon, final_lat, dist, crc_show);
                             if( file_frames_dec != nullptr )
-                                fprintf(file_frames_dec, "| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |   %6d |    %d |  %8.5f |  %8.5f | %3d |         |         |       |  OK |\n", nbBonsCRCs, loop_counter, k, s, df_value, oaci_value, type_frame, (int32_t)altitude, CPR_format, final_lon, final_lat, dist);
+                                fprintf(file_frames_dec, "| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |   %6d |    %d |  %8.5f |  %8.5f | %3d |         |         |       |  OK |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame, (int32_t)altitude, CPR_format, final_lon, final_lat, dist);
                             ptr_avion->set_altitude (altitude);
                             ptr_avion->set_GNSS_mode(true);
                             ptr_avion->set_latitude (final_lat);
@@ -1484,33 +1337,33 @@ int main(int argc, char *argv[]) {
                         if ((type_frame >= 23) && (type_frame <= 27))
                         {
                             if (dump_decoded_frame && (dump_resume == false))
-                                printf("| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |          |      |           |           |     |         |         |       |  OK |\n", nbBonsCRCs, loop_counter, k, s, df_value, oaci_value, type_frame);
+                                printf("| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |          |      |           |           |     |         |         |       |  %s |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame, crc_show);
                             if( file_frames_dec != nullptr )
-                                fprintf(file_frames_dec, "| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |          |      |           |           |     |         |         |       |  OK |\n", nbBonsCRCs, loop_counter, k, s, df_value, oaci_value, type_frame);
+                                fprintf(file_frames_dec, "| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |          |      |           |           |     |         |         |       |  OK |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame);
                         }
 
                         if (type_frame == 28)
                         {
                             if (dump_decoded_frame && (dump_resume == false))
-                                printf("| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |          |      |           |           |     |         |         |       |  OK |\n", nbBonsCRCs, loop_counter, k, s, df_value, oaci_value, type_frame);
+                                printf("| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |          |      |           |           |     |         |         |       |  %s |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame, crc_show);
                             if( file_frames_dec != nullptr )
-                                fprintf(file_frames_dec, "| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |          |      |           |           |     |         |         |       |  OK |\n", nbBonsCRCs, loop_counter, k, s, df_value, oaci_value, type_frame);
+                                fprintf(file_frames_dec, "| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |          |      |           |           |     |         |         |       |  OK |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame);
                         }
 
                         if (type_frame == 29)
                         {
                             if (dump_decoded_frame && (dump_resume == false))
-                                printf("| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |          |      |           |           |     |         |         |       |  OK |\n", nbBonsCRCs, loop_counter, k, s, df_value, oaci_value, type_frame);
+                                printf("| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |          |      |           |           |     |         |         |       |  %s |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame, crc_show);
                             if( file_frames_dec != nullptr )
-                                fprintf(file_frames_dec, "| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |          |      |           |           |     |         |         |       |  OK |\n", nbBonsCRCs, loop_counter, k, s, df_value, oaci_value, type_frame);
+                                fprintf(file_frames_dec, "| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |          |      |           |           |     |         |         |       |  OK |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame);
                         }
 
                         if (type_frame == 31)
                         {
                             if (dump_decoded_frame && (dump_resume == false))
-                                printf("| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |          |      |           |           |     |         |         |       |  OK |\n", nbBonsCRCs, loop_counter, k, s, df_value, oaci_value, type_frame);
+                                printf("| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |          |      |           |           |     |         |         |       |  %s |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame, crc_show);
                             if( file_frames_dec != nullptr )
-                                fprintf(file_frames_dec, "| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |          |      |           |           |     |         |         |       |  OK |\n", nbBonsCRCs, loop_counter, k, s, df_value, oaci_value, type_frame);
+                                fprintf(file_frames_dec, "| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |          |      |           |           |     |         |         |       |  OK |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame);
                         }
 
                         if( (dump_decoded_frame == false) && (dump_resume == false) )
@@ -1576,11 +1429,11 @@ int main(int argc, char *argv[]) {
             nbStrangeFrames += 1;
 
             std::cout << std::endl;
-            printf("OACI   | NAME     | LATITUDE  | LONGITUDE | H.SPEED   | V.SPEED   | ANGLE | TYPE | ALTITUDE  | DISTANCE [min,max] | FRAMES | LAST     |\n");
-            printf("-------|----------|-----------|-----------|-----------|-----------|-------|------|-----------|--------------------|--------|----------|\n");
+            printf("OACI   | TYPE   | NAME     | CORR. SCORE       |  LATITUDE | LONGITUDE | H.SPEED   | V.SPEED   | ANGLE | TYPE | ALTITUDE  | DISTANCE [min,max] | FRAMES | LAST     |\n");
+            printf("-------+--------+----------+-------------------+-----------+-----------+-----------+-----------+-------+------+-----------+--------------------+--------+----------|\n");
             for (uint32_t i = 0; i < liste_v.size(); i += 1)
             {
-                if( liste_v.at(i)->get_messages() >= 2 )    // Pour filter les bétises...
+                if( liste_v.at(i)->get_messages() >= 1 )    // Pour filter les bétises...
                     liste_v.at(i)->print();
             }
             std::cout << std::endl;

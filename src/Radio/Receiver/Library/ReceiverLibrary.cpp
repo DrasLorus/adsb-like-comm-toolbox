@@ -3,9 +3,11 @@
 #include "../File/ReceiverFileRAW.hpp"
 #include "../File/ReceiverFileUHD.hpp"
 #include "../File/ReceiverFileStreamRAW.hpp"
+#include "../File/ReceiverFileBZ2.hpp"
 
 #include "../Radio/HackRF/ReceiverHackRF.hpp"
 #include "../Radio/SoapyHackRF/ReceiverSoapyHackRF.hpp"
+#include "../Radio/SoapyUHD/ReceiverSoapyUHD.hpp"
 #include "../Radio/SoapyRTLSdr/ReceiverSoapyRTLSdr.hpp"
 #include "../Radio/USRP/ReceiverUSRP.hpp"
 
@@ -34,8 +36,8 @@ Receiver* ReceiverLibrary::allocate(Parameters& param)
     ) {
         ReceiverHackRF* r = new ReceiverHackRF(param.toDouble("fc"), param.toDouble("fe"));
         if( param.toInt("hackrf_amplifier") != -1 ) r->set_amp_enable( param.toInt("hackrf_amplifier") );
-        if( param.toInt("receiver_gain")  != -1 ) r->set_vga_gain  ( param.toInt("receiver_gain") );
-        if( param.toInt("receiver_gain")  != -1 ) r->set_lna_gain  ( param.toInt("receiver_gain") );
+        if( param.toInt("receiver_gain"   ) != -1 ) r->set_vga_gain  ( param.toInt("receiver_gain") );
+        if( param.toInt("receiver_gain"   ) != -1 ) r->set_lna_gain  ( param.toInt("receiver_gain") );
         radio = r;
 
     } else if(
@@ -61,11 +63,19 @@ Receiver* ReceiverLibrary::allocate(Parameters& param)
 
     } else if(
             (type == "radio" && module == "usrp")
-    ) {
+            ) {
         ReceiverUSRP* r = new ReceiverUSRP(param.toDouble("fc"), param.toDouble("fe"));
         if( param.toInt("receiver_gain")  != -1 )
             r->set_rx_gain( param.toInt("receiver_gain") );
+        radio = r;
 
+    } else if(
+            (type == "radio" && module == "SoapyUHD") ||
+            (type == "radio" && module == "SoapyUhd")
+            ) {
+        ReceiverSoapyUHD* r = new ReceiverSoapyUHD(param.toDouble("fc"), param.toDouble("fe"));
+        if( param.toInt("receiver_gain")  != -1 )
+            r->set_gain( param.toInt("receiver_gain") );
         radio = r;
 
     //
@@ -89,10 +99,20 @@ Receiver* ReceiverLibrary::allocate(Parameters& param)
     } else if( type == "file-stream" && (module.find(".raw") != std::string::npos) ) {
         ReceiverFileStreamRAW* r = new ReceiverFileStreamRAW(param.toString("filename"));
         radio = r;
+    } else if( type == "file-stream" && (module.find(".cs8.bz2") != std::string::npos) ) {
+        ReceiverFileBZ2* r = new ReceiverFileBZ2(param.toString("filename"), false);
+        radio = r;
+    } else if( type == "file-stream" && (module.find(".cu8.bz2") != std::string::npos) ) {
+        ReceiverFileBZ2* r = new ReceiverFileBZ2(param.toString("filename"), true);
+        radio = r;
     } else if( type == "file-stream" && (module.find(".cs8") != std::string::npos) ) {
-        ReceiverFileStreamRAW* r = new ReceiverFileStreamRAW(param.toString("filename"));
+        ReceiverFileStreamRAW* r = new ReceiverFileStreamRAW(param.toString("filename"), false);
+        radio = r;
+    } else if( type == "file-stream" && (module.find(".cu8") != std::string::npos) ) {
+        ReceiverFileStreamRAW* r = new ReceiverFileStreamRAW(param.toString("filename"), true);
         radio = r;
     }
+    
     else
     {
         cout << "Error in file (" << __FILE__ << ")" << " at line (" << __LINE__ << ")" << endl;

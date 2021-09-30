@@ -1,30 +1,33 @@
-#include "ReceiverFileStreamRAW.hpp"
+#include "ReceiverFileBZ2.hpp"
 
-
-ReceiverFileStreamRAW::ReceiverFileStreamRAW(std::string filen, const bool _unsigned_) : Receiver(0, 0)
+ReceiverFileBZ2::ReceiverFileBZ2(std::string filen, const bool _unsigned_) : Receiver(0, 0)
 {
     unsigned_mode = _unsigned_;
-    stream = fopen(filen.c_str(), "rb");
-    if (stream == NULL){
-        fprintf(stderr, "ReceiverFileStreamRAW::initialize() error during file openning (%s) !\n", filen.c_str());
-        exit( EXIT_FAILURE );
+
+    int bzerror = 0;
+    stream = fopen( filen.c_str(), "rb" );
+    streaz = BZ2_bzReadOpen( &bzerror, stream, 0, 0, 0, 0 );
+    if( bzerror != BZ_OK ) {
+        printf("(EE) An error happens during BZ2_bzReadOpen\n");
+        exit( 0 );
     }
 }
 
 
-ReceiverFileStreamRAW::~ReceiverFileStreamRAW()
+ReceiverFileBZ2::~ReceiverFileBZ2()
 {
+    BZ2_bzclose(streaz);
     fclose(stream);
 }
 
 
-void ReceiverFileStreamRAW::initialize()
+void ReceiverFileBZ2::initialize()
 {
 
 }
 
 
-bool ReceiverFileStreamRAW::reception(std::vector< std::complex<float> >& cbuffer, const uint32_t coverage)
+bool ReceiverFileBZ2::reception(std::vector< std::complex<float> >& cbuffer, const uint32_t coverage)
 {
     const uint32_t bComplex = cbuffer.size();      // Nombre de complexes
     const uint32_t nComplex = bComplex - coverage; // Nombre de complexes a recuperer
@@ -58,7 +61,16 @@ bool ReceiverFileStreamRAW::reception(std::vector< std::complex<float> >& cbuffe
 
     if( unsigned_mode == false )
     {
-        const uint32_t nRead = fread(buffer.data(), 1, nBytes, stream);
+        int bzerror = 0;
+        const uint32_t nRead = BZ2_bzRead ( &bzerror, streaz, buffer.data(), nBytes ); // length in bytes
+        if( bzerror == BZ_STREAM_END ) {
+            _alive = false;
+        }else if( bzerror == BZ_UNEXPECTED_EOF ) {
+            printf("(DD) BZ_UNEXPECTED_EOF\n");
+        }else if( bzerror != BZ_OK ) {
+            printf("(EE) An error happens during BZ2_bzRead\n");
+            exit(0);
+        }
         memset(buffer.data() + nRead, 1, nBytes - nRead);
 
         _alive = (nRead == nBytes);
@@ -73,7 +85,16 @@ bool ReceiverFileStreamRAW::reception(std::vector< std::complex<float> >& cbuffe
     }
     else
     {
-        const uint32_t nRead = fread(buffer.data(), 1, nBytes, stream);
+        int bzerror = 0;
+        const uint32_t nRead = BZ2_bzRead ( &bzerror, streaz, buffer.data(), nBytes ); // length in bytes
+        if( bzerror == BZ_STREAM_END ) {
+            _alive = false;
+        }else if( bzerror == BZ_UNEXPECTED_EOF ) {
+            printf("(DD) BZ_UNEXPECTED_EOF\n");
+        }else if( bzerror != BZ_OK ) {
+            printf("(EE) An error happens during BZ2_bzRead\n");
+            exit(0);
+        }
         memset(buffer.data() + nRead, 1, nBytes - nRead);
 
         _alive = (nRead == nBytes);
@@ -90,20 +111,20 @@ bool ReceiverFileStreamRAW::reception(std::vector< std::complex<float> >& cbuffe
 }
 
 
-void ReceiverFileStreamRAW::reset()
+void ReceiverFileBZ2::reset()
 {
     fprintf(stderr, "RadioFichier::reset() not implemented yet !\n");
     exit( EXIT_FAILURE );
 }
 
 
-void ReceiverFileStreamRAW::start_engine()
+void ReceiverFileBZ2::start_engine()
 {
 
 }
 
 
-void ReceiverFileStreamRAW::stop_engine()
+void ReceiverFileBZ2::stop_engine()
 {
 
 }
