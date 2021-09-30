@@ -6,6 +6,7 @@
 #include <complex>
 #include <cstring>
 #include <chrono>
+#include <bitset>
 
 #include <vector>
 #include <fstream>
