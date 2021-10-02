@@ -155,7 +155,7 @@ bool ReceiverSoapyUHD::reception(std::vector< std::complex<float> >& cbuffer, co
     long long time_ns;
     do{
         void *buffs[]  = {buff + nb_read};
-        uint32_t nRead = sdr->readStream( rx_stream, buffs, to_read - nb_read, flags, time_ns, 1000000);
+        int nRead = sdr->readStream( rx_stream, buffs, to_read - nb_read, flags, time_ns, 1000000);
         if( nRead < 0 ) exit( EXIT_FAILURE );
         nb_read       += nRead;
         if( nb_read != to_read ){

@@ -31,7 +31,7 @@ void ReceiverFileUHD::initialize()
         fprintf(stderr, "RadioFichier::initialize() error during file openning (%s) !\n", filename.c_str());
         exit( EXIT_FAILURE );
     }
-    char line[256];
+    char line[1024];
     char* buffer_real;
     char* buffer_imag;
 
@@ -47,7 +47,7 @@ void ReceiverFileUHD::initialize()
     }
     float vscale = std::max(std::abs(vmin), std::abs(vmax));
     float*  ptr = (float*)data.data();
-    for(int i = 0; i< (2 * data.size()); i += 1)
+    for(size_t i = 0; i< (2 * data.size()); i += 1)
     {
         ptr[i] = ptr[i] / vscale;
     }
@@ -72,6 +72,13 @@ void ReceiverFileUHD::initialize()
 }
 
 
+#if !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#else
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-parameter"
+#endif
 bool ReceiverFileUHD::reception(std::vector< std::complex<float> >& cbuffer, const uint32_t coverage)
 {
 
@@ -88,6 +95,12 @@ bool ReceiverFileUHD::reception(std::vector< std::complex<float> >& cbuffer, con
     _alive = false; // On stop le prog
     return true;
 }
+#if !defined(__clang__)
+#pragma GCC diagnostic pop
+#else
+#pragma clang diagnostic pop
+#endif
+
 
 
 void ReceiverFileUHD::reset()

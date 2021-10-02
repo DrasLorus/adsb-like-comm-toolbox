@@ -100,10 +100,10 @@ void EmitterFileRAW::emission( std::vector<int8_t>& cbuffer )
     firstFrame = false;
 }
 
-void EmitterFileRAW::set_txvga_gain(uint32_t value)
-{
+// void EmitterFileRAW::set_txvga_gain(uint32_t value)
+// {
 
-}
+// }
 
 
 void EmitterFileRAW::reset()

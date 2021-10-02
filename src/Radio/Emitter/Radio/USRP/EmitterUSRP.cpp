@@ -74,6 +74,13 @@ double EmitterUSRP::get_sample_rate()
 }
 
 
+#if !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#else
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-parameter"
+#endif
 void EmitterUSRP::set_amp_enable(bool value)
 {
 
@@ -91,6 +98,11 @@ void EmitterUSRP::set_antenna_enable(bool value)
 
 }
 
+#if !defined(__clang__)
+#pragma GCC diagnostic pop
+#else
+#pragma clang diagnostic pop
+#endif
 
 bool EmitterUSRP::get_antenna_enable( )
 {
@@ -114,11 +126,23 @@ void EmitterUSRP::dec_txvga_gain()
 }
 
 
+#if !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#else
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-parameter"
+#endif
 void EmitterUSRP::set_txvga_gain(uint32_t value)
 {
 
 }
 
+#if !defined(__clang__)
+#pragma GCC diagnostic pop
+#else
+#pragma clang diagnostic pop
+#endif
 
 uint32_t EmitterUSRP::get_txvga_gain( )
 {

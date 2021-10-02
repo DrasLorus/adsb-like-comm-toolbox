@@ -27,7 +27,9 @@ void BitUnpacking::execute(const std::vector<uint8_t>& ibuffer, std::vector<uint
     for(uint32_t i = 0; i < iLength; i += 1)
     {
         const uint8_t v = ibuffer[i];
+#if defined(__clang__)
 #pragma clang loop unroll(full)
+#endif
         for( uint32_t q = 0; q < 8 ; q += 1 )
         {
             (*ptr++) = (v >> (7-q)) & 0x01;

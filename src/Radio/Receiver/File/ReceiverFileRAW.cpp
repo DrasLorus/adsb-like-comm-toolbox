@@ -38,10 +38,15 @@ void ReceiverFileRAW::initialize()
     fclose(stream);
 }
 
-
+#if !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#else
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-parameter"
+#endif
 bool ReceiverFileRAW::reception(std::vector< std::complex<float> >& cbuffer, const uint32_t coverage)
 {
-
     if( cbuffer.size() != (data.size()/2) ) // Nombre de symbols et non d'echantillons
     {
         cbuffer.resize(data.size()/2);
@@ -69,6 +74,11 @@ bool ReceiverFileRAW::reception(std::vector< std::complex<float> >& cbuffer, con
     return true;
 }
 
+#if !defined(__clang__)
+#pragma GCC diagnostic pop
+#else
+#pragma clang diagnostic pop
+#endif
 
 void ReceiverFileRAW::reset()
 {

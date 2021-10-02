@@ -87,7 +87,20 @@ void ExportVector::SaveVector(std::vector<float>& abs, std::vector<uint8_t>& det
 }
 
 
+#if !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#else
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-parameter"
+#endif
 void ExportVector::SaveVector(std::vector<uint8_t>& abs, std::vector<uint8_t>& detec, std::string filename)
 {
 
 }
+
+#if !defined(__clang__)
+#pragma GCC diagnostic pop
+#else
+#pragma clang diagnostic pop
+#endif
