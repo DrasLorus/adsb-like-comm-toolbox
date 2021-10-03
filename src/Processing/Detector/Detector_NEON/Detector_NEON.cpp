@@ -52,8 +52,7 @@ void Detector_NEON::execute(float * buffer) {
 	printf("%f - %f\n", ps, sum);
     exit( EXIT_FAILURE );
 #endif
-    array[0] = (ps / sqrt(sum));
-//	return (ps/sqrt(sum));
+	array[0] = (ps/sqrt(sum));
 #else
     *buffer = 0; // No unused error
     printf("Le decodeur instancie pour realiser le traitement est le Detector_NEON, mais ce dernier");

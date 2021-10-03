@@ -67,6 +67,7 @@ ReceiverSoapyHackRF::ReceiverSoapyHackRF(const float s_fc, const float s_fe) : R
     }
 }
 
+
 ReceiverSoapyHackRF::~ReceiverSoapyHackRF()
 {
     sdr->closeStream( rx_stream );

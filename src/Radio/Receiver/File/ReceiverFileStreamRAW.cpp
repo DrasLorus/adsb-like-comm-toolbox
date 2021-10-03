@@ -81,7 +81,7 @@ bool ReceiverFileStreamRAW::reception(std::vector< std::complex<float> >& cbuffe
         const uint8_t* data = buffer.data();
         for(uint32_t i = 0; i < nBytes; i += 2)
         {
-            std::complex<float> value( (float)data[i] / 255.0f + 128.0f, (float)data[i+1] / 255.0f + 128.0f);
+            std::complex<float> value( ((float)data[i] + 128.0f) / 128.0f , ((float)data[i+1] + 128.0f) / 128.0f);
             cbuffer[coverage + i/2] = value;
         }
     }
