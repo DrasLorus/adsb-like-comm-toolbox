@@ -48,7 +48,7 @@ private:
     vector<uint64_t> values;
 
 public:
-    Histo(const int32_t binSize = 4)
+    Histo(const int32_t binSize = 8)
     {
         _binSize = binSize;
         values.resize( 256 );
@@ -102,11 +102,16 @@ public:
         {
             assert( data[i].real()  <= +1.0f );
             assert( data[i].real()  >= -1.0f );
-            const int32_t index = ((data[i].real() * 127.0f) + 127.0f);
-            _vmax = (_vmax >= index) ? _vmax : index;
-            _vmin = (_vmin >= index) ? _vmin : index;
-            _vsum = _vsum + (index - 127);                  // WARNING IT IS NOT THE SAME EVERYTIMES
-            values[ index ] += 1;
+            const int32_t index1 = ((data[i].real() * 127.0f) + 128.0f);
+            const int32_t index2 = ((data[i].imag() * 127.0f) + 128.0f);
+            _vmax = (_vmax >= index1) ? _vmax : index1;
+            _vmin = (_vmin <= index1) ? _vmin : index1;
+            _vmax = (_vmax >= index2) ? _vmax : index2;
+            _vmin = (_vmin <= index2) ? _vmin : index2;
+            _vsum = _vsum + (index1 - 127);                  // WARNING IT IS NOT THE SAME EVERYTIMES
+            _vsum = _vsum + (index2 - 127);                  // WARNING IT IS NOT THE SAME EVERYTIMES
+            values[ index1 ] += 1;
+            values[ index1 ] += 1;
 //            cout << "data[i].real() = " << data[i].real() << " and index = " << index << std::endl;
         }
         _count += data.size();
@@ -160,11 +165,17 @@ public:
         {
             binValues[i] = (10000 * binValues[i]) /  sumv; // 100 * 100 pour garder 2 digits frac.
         }
-        cout << "---------------------------------------------------" << endl;
-        for(int32_t i = first; i <=  last; i++)
+        printf("\e[1;1H\e[2J");
+        cout << "--------------- vmin = " << _vmin << " and vmax = " << _vmax << "-----------------" << endl;
+        for(int32_t i = 0/*first*/; i <= binValues.size() - 1/*last*/; i++)
         {
-            printf("[%3d:%3d] - %1.3f\n", _binSize * i, _binSize * i + (_binSize -1), ((float)binValues[i])/100.0f);
+            printf("[%4d %4d] - %5.2f%% | ", _binSize * i - 128, _binSize * i + (_binSize -1) -128, ((float)binValues[i])/100.0f);
+            const uint32_t diese = std::ceil(((float)binValues[i]) / 100.0f * 2.0f);
+            for(uint32_t j = 0; j < diese; j += 1)
+                printf("#");
+            printf("\n");
         }
+
     }
 
 };

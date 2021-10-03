@@ -82,7 +82,7 @@ ReceiverSoapyRTLSdr::ReceiverSoapyRTLSdr(const float s_fc, const float s_fe) : R
     set_tuner_gain (0 );
 
     // 4. setup a stream (complex floats)
-    rx_stream = sdr->setupStream( SOAPY_SDR_RX, SOAPY_SDR_CF32);
+    rx_stream = sdr->setupStream( SOAPY_SDR_RX, SOAPY_SDR_CF32 );
     if( rx_stream == NULL)
     {
         fprintf( stderr, "Failed\n");

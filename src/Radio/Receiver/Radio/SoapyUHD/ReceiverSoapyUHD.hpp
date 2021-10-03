@@ -22,8 +22,9 @@
 class ReceiverSoapyUHD : public Receiver{
 
 private :
-//    double freq_hz;
-//    double fech_hz;
+    float v_min;
+    float v_max;
+    uint64_t acqn;
 //    bool amplifier;
 //    bool antenna;
 //    uint32_t vga_gain;

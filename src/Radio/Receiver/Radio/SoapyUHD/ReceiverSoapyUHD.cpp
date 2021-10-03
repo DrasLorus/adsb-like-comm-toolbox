@@ -66,6 +66,10 @@ ReceiverSoapyUHD::ReceiverSoapyUHD(const float s_fc, const float s_fe) : Receive
         SoapySDR::Device::unmake( sdr );
         exit( EXIT_FAILURE );
     }
+
+    v_min = 0.0f;
+    v_max = 0.0f;
+    acqn  = 0;
 }
 
 ReceiverSoapyUHD::~ReceiverSoapyUHD()
@@ -163,17 +167,25 @@ bool ReceiverSoapyUHD::reception(std::vector< std::complex<float> >& cbuffer, co
         }
     }while( (to_read - nb_read) != 0 );
 
-#if 1
+#if 0
     const uint32_t length  = cbuffer.size();
     for(uint32_t loop = coverage; loop < length; loop += 1)
     {
-        cbuffer[loop] *= 127.0f;
+        const float real = cbuffer[loop].real();
+        const float imag = cbuffer[loop].imag();
+        v_min = std::fmin(v_min, real);
+        v_max = std::fmax(v_max, real);
+        v_min = std::fmin(v_min, imag);
+        v_max = std::fmax(v_max, imag);
     }
-#else
-    float* pbuff = (float *)cbuffer.data();
-    for(int i = 0; i < 2 * to_read; i += 1)
+    acqn += 1;
+    if( acqn%1024 == 0)
     {
-        pbuff[i] = pbuff[i] * 127.0f;
+        if( v_max < 0.10f ) {
+            set_gain(get_gain() + 1.0f);
+            std::cout << "[INFO] Increasing the SdR RX gain [gain = " << get_gain() << " dB]" << std::endl;
+            std::cout << "       Automatic gain control (vmin = " << v_min << " and vmax = " << v_max << ")" << std::endl;
+        }
     }
 #endif
     return true;

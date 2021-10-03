@@ -6,22 +6,23 @@ ReceiverSoapyHackRF::ReceiverSoapyHackRF(const float s_fc, const float s_fe) : R
     SoapySDR::KwargsList results = SoapySDR::Device::enumerate();
     SoapySDR::Kwargs::iterator it;
 
-    if( results.size() == 0 ) exit( 0 );
+    if( results.size() == 0 )
+        exit( 0 );
 
-    for( int i = 0; i < 1 /*results.size()*/; ++i)  // On prend toujours le permier de la liste
-    {
-        printf("Found device #%d:\n", i);
-        for( it = results[i].begin(); it != results[i].end(); ++it)
-        {
-            printf("%s = %s\n", it->first.c_str(), it->second.c_str());
-        }
-        printf("\n");
-    }
+//    for( int i = 0; i < results.size(); ++i)  // On prend toujours le permier de la liste
+//    {
+//        printf("Found device #%d:\n", i);
+//        for( it = results[i].begin(); it != results[i].end(); ++it)
+//        {
+//            printf("%s = %s\n", it->first.c_str(), it->second.c_str());
+//        }
+//        printf("\n");
+//    }
 
     //
     // On instancie un objet de type driver
     //
-    sdr = SoapySDR::Device::make("");
+    sdr = SoapySDR::Device::make("driver=hackrf");
     if( sdr == NULL )
     {
         fprintf(stderr, "SoapySDR::Device::make failed\n");
@@ -193,8 +194,8 @@ bool ReceiverSoapyHackRF::reception(std::vector< std::complex<float> >& cbuffer,
     }while( (to_read - nb_read) != 0 );
 
 #if 1
-    for(uint32_t i = 0; i < to_read; i += 1)
-        buff[i] *= 127.0f;
+//    for(uint32_t i = 0; i < to_read; i += 1)
+//        buff[i] *= 127.0f;
 #else
     float* pbuff = (float *)cbuffer.data();
     for(int i = 0; i < 2 * to_read; i += 1)

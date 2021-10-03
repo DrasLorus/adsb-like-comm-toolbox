@@ -27,6 +27,7 @@ ReceiverHackRF::ReceiverHackRF(float s_fc, float s_fe) : Receiver(s_fc, s_fe), b
     modules.push_back("000000000000000026b468dc33776d8f");
     modules.push_back("000000000000000075b068dc317bae07");
     modules.push_back("0000000000000000088869dc242e9d1b");
+    modules.push_back("0000000000000000088869dc334b441b");
 
     int result;
     result = hackrf_init();
@@ -303,7 +304,7 @@ bool ReceiverHackRF::reception(std::vector< std::complex<float> >& cbuffer, cons
 
     for(uint32_t i = 0; i < toRead; i += 2)
     {
-        std::complex<float> value( (float)buf[i] / 127.0f, (float)buf[i+1] / 127.0f );
+        std::complex<float> value( (float)buf[i] / 128.0f, (float)buf[i+1] / 128.0f );
         cbuffer[i/2 + coverage] = value;
     }
     delete[] buf;
