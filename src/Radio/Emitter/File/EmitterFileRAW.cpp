@@ -100,11 +100,22 @@ void EmitterFileRAW::emission( std::vector<int8_t>& cbuffer )
     firstFrame = false;
 }
 
-// void EmitterFileRAW::set_txvga_gain(uint32_t value)
-// {
+#if defined (__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-parameter"
+#else
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#endif
+void EmitterFileRAW::set_txvga_gain(uint32_t value)
+{
 
-// }
-
+}
+#if defined (__clang__)
+#pragma clang diagnostic pop
+#else
+#pragma GCC diagnostic pop
+#endif
 
 void EmitterFileRAW::reset()
 {

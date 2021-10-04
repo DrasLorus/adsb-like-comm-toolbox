@@ -26,7 +26,7 @@
 bool CRC( const uint8_t trame[120]){
 
     bitset<25> crc = 0b0000000000000000000000000;
-    bitset<25> polynome2 = 0b1111111111111010000001001;
+    // bitset<25> polynome2 = 0b1111111111111010000001001;
     bitset<25> polynome = 0b1001000000101111111111111;
 
     for(int q=8; q <33; q++){
@@ -409,8 +409,8 @@ int main(int argc, char* argv[])
     std::vector<uint8_t> frame_status( buffer_detect.size() );
 #endif
 
-    bool firstAcq = true;
-    const bool mode_inter = param.toBool("mode_inter");
+    // bool firstAcq = true;
+    // const bool mode_inter = param.toBool("mode_inter");
 
     uint32_t stream_ptr = 0;
 

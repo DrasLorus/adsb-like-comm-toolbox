@@ -1,17 +1,22 @@
 cmake_minimum_required (VERSION 3.16)
 
-# set ( CMAKE_CXX_FLAGS "                   -Wall -Ofast -march=native
-# -mtune=native -Wno-unknown-pragmas" )
+# set ( CMAKE_CXX_FLAGS "-Wall -Ofast -march=native -mtune=native
+# -Wno-unknown-pragmas" )
 
 # set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/local/include")
 
-# x86 part set (CMAKE_EXE_LINKER_FLAGS "-L/usr/local/lib") # UHD
+# x86 part
+
+# set (CMAKE_EXE_LINKER_FLAGS "-L/usr/local/lib") # UHD
 
 # set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -luhd") # UHD set
 # (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lhackrf") # UHD set
 # (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lSoapySDR") # SoapySDR
 
-set (CMAKE_CXX_STANDARD 17)
+set (CMAKE_CXX_STANDARD 14)
+set (CMAKE_CXX_EXTENSIONS OFF)
+
+set (CMAKE_EXPORT_COMPILE_COMMANDS true)
 
 project (
   adsb-like-comm-toolbox
@@ -19,7 +24,55 @@ project (
   LANGUAGES CXX
 )
 
+option (fast_opt "enable fast code at the expense of stability" ON)
+
 find_package (UHD REQUIRED)
+
+find_library (
+  HACKRF
+  NAME
+  hackrf
+  libhackrf
+  REQUIRED
+)
+find_library (
+  SOAPYSDR
+  NAME
+  SoapySDR
+  libSoapySDR
+  REQUIRED
+)
+
+if (fast_opt)
+  add_compile_options (-Ofast)
+endif ()
+
+add_compile_options (-Wall -Werror -Wno-unknown-pragmas)
+
+if (fast_opt)
+  add_compile_options (-Ofast)
+  include (CheckCXXCompilerFlag)
+  check_cxx_compiler_flag ("-march=native" MARCH)
+  check_cxx_compiler_flag ("-mtune=native" MTUNE)
+  if ((NOT MARCH) OR (NOT MTUNE))
+    check_cxx_compiler_flag ("-mcpu=native" MCPU)
+    if (MCPU)
+      add_compile_options (-mcpu=native)
+    else ()
+      message (
+        WARNING
+          "Can't use native detection, neither -march, -mtune nor -mcpu. Disabled."
+      )
+    endif ()
+  else ()
+    add_compile_options (-march=native -mtune=native)
+  endif ()
+endif ()
+
+if (APPLE)
+  include_directories (SYSTEM /usr/local/include)
+  link_directories (/usr/local/lib)
+endif ()
 
 add_subdirectory (receiver_adsb EXCLUDE_FROM_ALL)
 
@@ -68,7 +121,7 @@ add_subdirectory (test_vecto EXCLUDE_FROM_ALL)
 
 # ##############################################################################
 
-add_subdirectory (examples EXCLUDE_FROM_ALL)
+add_subdirectory (examples)
 
 add_library (commToolbox STATIC)
 target_sources (

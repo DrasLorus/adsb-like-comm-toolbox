@@ -42,7 +42,7 @@
 #define str_Rotorcraft               " Rotor"
 
 
-char* toCodeName(const int32_t value) {
+const char* toCodeName(const int32_t value) {
     switch (value) {
         case NoInformation           : return str_NoInformation;
         case Reserved                : return str_Reserved;

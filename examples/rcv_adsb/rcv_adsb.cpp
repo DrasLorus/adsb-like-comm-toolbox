@@ -1158,12 +1158,12 @@ int main(int argc, char *argv[]) {
 
                 if ((crc_is_ok == true) || (crc_is_ok == false && verbose >= 2))
                 {
-                    char* crc_show;
+                    string crc_show;
                          if( crc_initial   == true ) crc_show = "\x1B[32mOK\x1B[0m";
                     else if( crc_brute_1x  == true ) crc_show = "\x1B[33mOK\x1B[0m";
                     else if( crc_brute_2x  == true ) crc_show = "\x1B[35mOK\x1B[0m";
                     else if( crc_brute_llr == true ) crc_show = "\x1B[36mOK\x1B[0m";
-//                    printf("%d %d %d %d => %s\n", crc_initial, nbBonsCRCs_1x, nbBonsCRCs_2x, nbBonsCRCs_llr, crc_show);
+//                    printf("%d %d %d %d => %s\n", crc_initial, nbBonsCRCs_1x, nbBonsCRCs_2x, nbBonsCRCs_llr, crc_show.c_str());
 
                     if( verbose >= 1 )
                     {
@@ -1218,7 +1218,7 @@ int main(int argc, char *argv[]) {
                             caractere[8] = 0;
 
                             if (dump_decoded_frame && (dump_resume == false))
-                                printf("| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d | %s |          |      |           |           |     |         |         |       |  %s |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame, caractere, crc_show);
+                                printf("| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d | %s |          |      |           |           |     |         |         |       |  %s |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame, caractere, crc_show.c_str());
                             if( file_frames_dec != nullptr )
                                 fprintf(file_frames_dec, "| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d | %s |          |      |           |           |     |         |         |       |  OK |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame, caractere);
 
@@ -1229,7 +1229,7 @@ int main(int argc, char *argv[]) {
                         if ((type_frame >= 5) && (type_frame <= 8) )
                         {
                             if (dump_decoded_frame && (dump_resume == false))
-                                printf("| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |          |      |           |           |     |         |         |       |  %s |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame, crc_show);
+                                printf("| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |          |      |           |           |     |         |         |       |  %s |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame, crc_show.c_str());
                             if( file_frames_dec != nullptr )
                                 fprintf(file_frames_dec, "| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |          |      |           |           |     |         |         |       |  OK |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame);
                         }
@@ -1259,7 +1259,7 @@ int main(int argc, char *argv[]) {
 
 
                             if (dump_decoded_frame && (dump_resume == false)) {
-                                printf("| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |   %6d |    %d |  %8.5f |  %8.5f | %3d |         |         |       |  %s |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame, (int32_t)altitude, CPR_format, final_lon, final_lat, dist, crc_show);
+                                printf("| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |   %6d |    %d |  %8.5f |  %8.5f | %3d |         |         |       |  %s |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame, (int32_t)altitude, CPR_format, final_lon, final_lat, dist, crc_show.c_str());
                             }
                             if( file_frames_dec != nullptr )
                                 fprintf(file_frames_dec, "| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |   %6d |    %d |  %8.5f |  %8.5f | %3d |         |         |       |  OK |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame, (int32_t)altitude, CPR_format, final_lon, final_lat, dist);
@@ -1295,7 +1295,7 @@ int main(int argc, char *argv[]) {
                                 if (vec_demod[39 + 37] == 1) Vr = -Vr; // en feet/min
                                 Vr = Vr * 0.3048;
                                 if (dump_decoded_frame && (dump_resume == false))
-                                    printf("| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |          |      |           |           |     |    %4d |    %4d |  %4d |  %s |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame, (int32_t) speed, (int32_t) Vr, (int32_t) angle, crc_show);
+                                    printf("| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |          |      |           |           |     |    %4d |    %4d |  %4d |  %s |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame, (int32_t) speed, (int32_t) Vr, (int32_t) angle, crc_show.c_str());
                                 if( file_frames_dec != nullptr )
                                     fprintf(file_frames_dec, "| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |          |      |           |           |     |    %4d |    %4d |  %4d |  OK |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame, (int32_t) speed, (int32_t) Vr, (int32_t) angle);
                                 ptr_avion->set_speed_horizontal(speed);
@@ -1325,7 +1325,7 @@ int main(int argc, char *argv[]) {
                             const int32_t dist        = distance(final_lat, final_lon, ref_latitude, ref_longitude);
 
                             if (dump_decoded_frame && (dump_resume == false))
-                                printf("| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |   %6d |    %d |  %8.5f |  %8.5f | %3d |         |         |       |  %s |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame, (int32_t)altitude, CPR_format, final_lon, final_lat, dist, crc_show);
+                                printf("| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |   %6d |    %d |  %8.5f |  %8.5f | %3d |         |         |       |  %s |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame, (int32_t)altitude, CPR_format, final_lon, final_lat, dist, crc_show.c_str());
                             if( file_frames_dec != nullptr )
                                 fprintf(file_frames_dec, "| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |   %6d |    %d |  %8.5f |  %8.5f | %3d |         |         |       |  OK |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame, (int32_t)altitude, CPR_format, final_lon, final_lat, dist);
                             ptr_avion->set_altitude (altitude);
@@ -1338,7 +1338,7 @@ int main(int argc, char *argv[]) {
                         if ((type_frame >= 23) && (type_frame <= 27))
                         {
                             if (dump_decoded_frame && (dump_resume == false))
-                                printf("| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |          |      |           |           |     |         |         |       |  %s |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame, crc_show);
+                                printf("| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |          |      |           |           |     |         |         |       |  %s |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame, crc_show.c_str());
                             if( file_frames_dec != nullptr )
                                 fprintf(file_frames_dec, "| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |          |      |           |           |     |         |         |       |  OK |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame);
                         }
@@ -1346,7 +1346,7 @@ int main(int argc, char *argv[]) {
                         if (type_frame == 28)
                         {
                             if (dump_decoded_frame && (dump_resume == false))
-                                printf("| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |          |      |           |           |     |         |         |       |  %s |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame, crc_show);
+                                printf("| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |          |      |           |           |     |         |         |       |  %s |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame, crc_show.c_str());
                             if( file_frames_dec != nullptr )
                                 fprintf(file_frames_dec, "| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |          |      |           |           |     |         |         |       |  OK |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame);
                         }
@@ -1354,7 +1354,7 @@ int main(int argc, char *argv[]) {
                         if (type_frame == 29)
                         {
                             if (dump_decoded_frame && (dump_resume == false))
-                                printf("| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |          |      |           |           |     |         |         |       |  %s |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame, crc_show);
+                                printf("| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |          |      |           |           |     |         |         |       |  %s |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame, crc_show.c_str());
                             if( file_frames_dec != nullptr )
                                 fprintf(file_frames_dec, "| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |          |      |           |           |     |         |         |       |  OK |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame);
                         }
@@ -1362,7 +1362,7 @@ int main(int argc, char *argv[]) {
                         if (type_frame == 31)
                         {
                             if (dump_decoded_frame && (dump_resume == false))
-                                printf("| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |          |      |           |           |     |         |         |       |  %s |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame, crc_show);
+                                printf("| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |          |      |           |           |     |         |         |       |  %s |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame, crc_show.c_str());
                             if( file_frames_dec != nullptr )
                                 fprintf(file_frames_dec, "| %5d | %5d | %6d | %1.4f |  %2d | %06X |  %2d |          |          |      |           |           |     |         |         |       |  OK |\n", nbBonsCRCs, loop_counter, k, score, df_value, oaci_value, type_frame);
                         }
@@ -1416,7 +1416,7 @@ int main(int argc, char *argv[]) {
 
         if ( (dump_resume == true) && ( (loop_counter % 32 == 0) || (!radio->alive()) || (isFinished == true)) )
         {
-            printf("\e[1;1H\e[2J");
+            printf("\x1B[1;1H\x1B[2J");
             const auto stop = std::chrono::system_clock::now();
             const int32_t eTime = chrono::duration_cast<chrono::seconds>(stop - start).count();
             std::cout << "Application runtime : " << eTime << " seconds"

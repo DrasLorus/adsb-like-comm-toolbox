@@ -33,3 +33,8 @@ examples/build/*
 examples/cmake-build-debug/*
 examples/.idea/*
 cmake-build-relwithdebinfo/*
+
+.cache
+.vscode
+*/build
+build 

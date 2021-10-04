@@ -1,5 +1,6 @@
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "bugprone-reserved-identifier"
+
 #include <iostream>
 
 #include <cmath>

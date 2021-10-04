@@ -19,7 +19,7 @@ void ReceiverUSRP::initialize(){
     usrp->set_clock_source("internal");
 	usrp->set_rx_rate(fe);                         // Set de la fréquence d'échantillonnage
 	usrp->set_rx_freq(fc);             // Set de la fréquence porteuse
-	usrp->set_rx_antenna("RX2");
+	usrp->set_rx_antenna("TX/RX");
 	usrp->set_rx_gain(0);
 
     uhd::stream_args_t stream_args("fc32", "sc16");
@@ -30,7 +30,7 @@ void ReceiverUSRP::initialize(){
     cout << "[UHD] Sampling Rate set to         : " << usrp->get_rx_rate() << " MHz" << endl;
     cout << "[UHD] Central Frequency set to     : " << usrp->get_rx_freq() << " MHz" << endl;
     cout << "[UHD] Receiver gain is set to      : " << usrp->get_rx_gain() << " dB" << endl;
-    cout << "[UHD] Reception antenna is set to  : RX2" << endl;
+    cout << "[UHD] Reception antenna is set to  : TRX" << endl;
     cout << "[UHD] Sample data format is set to : fc32" << endl;
     cout << "[UHD] #channels for rx_stream      : " << rx_stream->get_num_channels() << " channel(s)" << endl;
     cout << "[UHD] #samples in rx_stream buffer : " << rx_stream->get_max_num_samps() << " IQs" << endl;

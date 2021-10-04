@@ -96,7 +96,7 @@ make -j 4
 
 ## Mac-OS
 
-Af
+[ ] - TODO
 
 ## Linux (ubuntu)
 

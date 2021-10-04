@@ -58,6 +58,8 @@ set (CMAKE_EXE_LINKER_FLAGS
 
 set (CMAKE_CXX_STANDARD 17)
 
+set (IGNORED_WARNING -Wno-unused-parameter -Wno-sign-compare)
+
 # ##############################################################################
 
 project (rcv_usrp)
@@ -105,6 +107,7 @@ set (
 )
 
 add_executable (rcv_usrp ${SOURCE_FILES})
+target_compile_options(rcv_usrp PRIVATE ${IGNORED_WARNING})
 
 target_link_libraries (rcv_usrp uhd)
 target_link_libraries (rcv_usrp hackrf)
@@ -158,6 +161,7 @@ set (
 )
 
 add_executable (rcv_adsb ${SOURCE_FILES})
+target_compile_options(rcv_adsb PRIVATE ${IGNORED_WARNING})
 
 target_link_libraries (rcv_adsb uhd)
 target_link_libraries (rcv_adsb hackrf)
@@ -211,6 +215,7 @@ set (
 )
 
 add_executable (rcv_calibration ${SOURCE_FILES})
+target_compile_options(rcv_calibration PRIVATE ${IGNORED_WARNING})
 
 target_link_libraries (rcv_calibration uhd)
 target_link_libraries (rcv_calibration hackrf)
@@ -243,6 +248,7 @@ set (
 )
 
 add_executable (snd_usrp ${SOURCE_FILES})
+target_compile_options(snd_usrp PRIVATE ${IGNORED_WARNING})
 
 target_link_libraries (snd_usrp uhd)
 target_link_libraries (snd_usrp hackrf)
