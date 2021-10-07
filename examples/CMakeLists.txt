@@ -26,231 +26,237 @@ set (CMAKE_CXX_FLAGS
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/opt/homebrew/opt/bzip2/include")
 
 # x86 part
-set (CMAKE_EXE_LINKER_FLAGS "-L/usr/local/lib") # UHD
+set(CMAKE_EXE_LINKER_FLAGS "-L/usr/local/lib") # UHD
 
-# set(CMAKE_EXE_LINKER_FLAGS " /usr/local/lib/libboost_filesystem-mt.dylib") #
-# UHD set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}
-# /usr/local/lib/libboost_system-mt.dylib") # UHD set(CMAKE_EXE_LINKER_FLAGS
-# "${CMAKE_EXE_LINKER_FLAGS} /usr/local/opt/hackrf/lib/libhackrf.a") # UHD
-# set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}
-# /usr/local/opt/libusb/lib/libusb-1.0.a") # UHD set(CMAKE_EXE_LINKER_FLAGS
-# "${CMAKE_EXE_LINKER_FLAGS} /usr/local/Cellar/uhd/4.0.0.0/lib/libuhd.dylib") #
-# UHD set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -framework
-# CoreFoundation -framework IOKit") # UHD set(CMAKE_EXE_LINKER_FLAGS
-# "${CMAKE_EXE_LINKER_FLAGS} -lncurses") # UHD set(CMAKE_EXE_LINKER_FLAGS
-# "${CMAKE_EXE_LINKER_FLAGS} -L/usr/local/lib -lSoapySDR") # SoapySDR
+#set(CMAKE_EXE_LINKER_FLAGS "                          /usr/local/lib/libboost_filesystem-mt.dylib") # UHD
+#set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /usr/local/lib/libboost_system-mt.dylib") # UHD
+#set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /usr/local/opt/hackrf/lib/libhackrf.a") # UHD
+#set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /usr/local/opt/libusb/lib/libusb-1.0.a") # UHD
+#set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /usr/local/Cellar/uhd/4.0.0.0/lib/libuhd.dylib") # UHD
+#set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -framework CoreFoundation -framework IOKit") # UHD
+#set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lncurses") # UHD
+#set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/usr/local/lib -lSoapySDR") # SoapySDR
 
-set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -luhd") # UHD
-set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lhackrf") # UHD
-set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lSoapySDR") # SoapySDR
-set (CMAKE_EXE_LINKER_FLAGS
-     "${CMAKE_EXE_LINKER_FLAGS} -L/opt/homebrew/Cellar/uhd/4.0.0.0_2/lib"
-) # UHD
-set (CMAKE_EXE_LINKER_FLAGS
-     "${CMAKE_EXE_LINKER_FLAGS} -L/opt/homebrew/Cellar/hackrf/2021.03.1/lib"
-) # UHD
-set (CMAKE_EXE_LINKER_FLAGS
-     "${CMAKE_EXE_LINKER_FLAGS} -L/opt/homebrew/Cellar/soapysdr/0.8.1/lib"
-) # UHD
-set (CMAKE_EXE_LINKER_FLAGS
-     "${CMAKE_EXE_LINKER_FLAGS} -L/opt/homebrew/opt/bzip2/lib"
-) # UHD
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -luhd") # UHD
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lhackrf") # UHD
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lSoapySDR") # SoapySDR
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/opt/homebrew/Cellar/uhd/4.0.0.0_2/lib") # UHD
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/opt/homebrew/Cellar/hackrf/2021.03.1/lib") # UHD
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/opt/homebrew/Cellar/soapysdr/0.8.1/lib") # UHD
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/opt/homebrew/opt/bzip2/lib") # UHD
 
-set (CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 17)
 
 set (IGNORED_WARNING -Wno-unused-parameter -Wno-sign-compare)
 
-# ##############################################################################
+########################################################################################################################
 
-project (rcv_usrp)
+project(rcv_usrp)
 
-set (
-  SOURCE_FILES
-  ../src/Processing/CRC32b/CRC/CRC32b.cpp
-  ../src/RingBuff/RingBuff.cpp
-  ../src/Tools/Parameters/Parameters.cpp
-  ../src/Tools/CTickCounter/CTickCounter.cpp
-  ../src/Tools/ExportVector/ExportVector.cpp
-  ../src/Tools/Conversion/cvt_float_i8.cpp
-  ../src/Tools/Conversion/cvt_float_u8.cpp
-  ../src/Tools/Conversion/cvt_u8_float.cpp
-  ../src/Tools/Conversion/cvt_i8_float.cpp
-  ../src/Processing/CplxModule/CplxModule.cpp
-  ../src/Processing/CplxModule/CplxModule_x86/CplxModule_x86.cpp
-  ../src/Processing/CplxModule/CplxModule_NEON/CplxModule_NEON.cpp
-  ../src/Processing/CplxModule/CplxModule_AVX2/CplxModule_AVX2.cpp
-  ../src/Processing/CplxModule/Library/CplxModuleLibrary.cpp
-  ../src/Radio/Receiver/Receiver.cpp
-  ../src/Radio/Receiver/Radio/SoapyRTLSdr/ReceiverSoapyRTLSdr.cpp
-  ../src/Radio/Receiver/Radio/SoapyHackRF/ReceiverSoapyHackRF.cpp
-  ../src/Radio/Receiver/Radio/SoapyUHD/ReceiverSoapyUHD.cpp
-  ../src/Radio/Receiver/Radio/HackRF/ReceiverHackRF.cpp
-  ../src/Radio/Receiver/Radio/USRP/ReceiverUSRP.cpp
-  ../src/Radio/Receiver/File/ReceiverFileRAW.cpp
-  ../src/Radio/Receiver/File/ReceiverFileStreamRAW.cpp
-  ../src/Radio/Receiver/File/ReceiverFileUHD.cpp
-  ../src/Radio/Receiver/File/ReceiverFileBZ2.cpp
-  ../src/Radio/Receiver/Library/ReceiverLibrary.cpp
-  ../src/Processing/PPM/demod/PPM_demod.cpp
-  ../src/Processing/DataPacking/BitPacking/BitPacking.cpp
-  ../src/Processing/CRC32b/CheckCRC32b/CheckCRC32b.cpp
-  ../src/Processing/CRC32b/RemoveCRC32b/RemoveCRC32b.cpp
-  ../src/Processing/ADSBSynchro/RemoveADSBSynchro/RemoveADSBSynchro.cpp
-  ../src/Processing/IQ/Removing/IQ_Removing.cpp
-  ../src/Processing/Sampling/Down/DownSampling.cpp
-  ../src/Processing/Detector/Detector.cpp
-  ../src/Processing/Detector/Detector_x86/Detector_x86.cpp
-  ../src/Processing/Detector/Detector_NEON/Detector_NEON.cpp
-  ../src/Processing/Detector/Detector_AVX2/Detector_AVX2.cpp
-  ../src/Processing/Detector/Library/DetectorLibrary.cpp
-  rcv_usrp/rcv_usrp.cpp
-)
+set(SOURCE_FILES
+        ../src/Processing/CRC32b/CRC/CRC32b.cpp
+        ../src/RingBuff/RingBuff.cpp
+        ../src/Tools/Parameters/Parameters.cpp
+        ../src/Tools/CTickCounter/CTickCounter.cpp
+        ../src/Tools/ExportVector/ExportVector.cpp
+        ../src/Tools/Conversion/cvt_float_i8.cpp
+        ../src/Tools/Conversion/cvt_float_u8.cpp
+        ../src/Tools/Conversion/cvt_u8_float.cpp
+        ../src/Tools/Conversion/cvt_i8_float.cpp
 
-add_executable (rcv_usrp ${SOURCE_FILES})
-target_compile_options(rcv_usrp PRIVATE ${IGNORED_WARNING})
+        ../src/Processing/CplxModule/CplxModule.cpp
+        ../src/Processing/CplxModule/CplxModule_x86/CplxModule_x86.cpp
+        ../src/Processing/CplxModule/CplxModule_NEON/CplxModule_NEON.cpp
+        ../src/Processing/CplxModule/CplxModule_AVX2/CplxModule_AVX2.cpp
+        ../src/Processing/CplxModule/Library/CplxModuleLibrary.cpp
 
-target_link_libraries (rcv_usrp uhd)
-target_link_libraries (rcv_usrp hackrf)
-target_link_libraries (rcv_usrp SoapySDR)
-target_link_libraries (rcv_usrp bz2)
+        ../src/Radio/Receiver/Receiver.cpp
+        ../src/Radio/Receiver/Radio/SoapyRTLSdr/ReceiverSoapyRTLSdr.cpp
+        ../src/Radio/Receiver/Radio/SoapyHackRF/ReceiverSoapyHackRF.cpp
+        ../src/Radio/Receiver/Radio/SoapyUHD/ReceiverSoapyUHD.cpp
+        ../src/Radio/Receiver/Radio/HackRF/ReceiverHackRF.cpp
+        ../src/Radio/Receiver/Radio/USRP/ReceiverUSRP.cpp
+        ../src/Radio/Receiver/Radio/ThreadUSRP/ReceiverThreadUSRP.cpp
 
-# ##############################################################################
+        ../src/Radio/Receiver/File/ReceiverFileRAW.cpp
+        ../src/Radio/Receiver/File/ReceiverFileStreamRAW.cpp
+        ../src/Radio/Receiver/File/ReceiverFileUHD.cpp
+        ../src/Radio/Receiver/File/ReceiverFileBZ2.cpp
+        ../src/Radio/Receiver/Library/ReceiverLibrary.cpp
 
-project (rcv_adsb)
+        ../src/Processing/PPM/demod/PPM_demod.cpp
+        ../src/Processing/DataPacking/BitPacking/BitPacking.cpp
+        ../src/Processing/CRC32b/CheckCRC32b/CheckCRC32b.cpp
+        ../src/Processing/CRC32b/RemoveCRC32b/RemoveCRC32b.cpp
+        ../src/Processing/ADSBSynchro/RemoveADSBSynchro/RemoveADSBSynchro.cpp
+        ../src/Processing/IQ/Removing/IQ_Removing.cpp
+        ../src/Processing/Sampling/Down/DownSampling.cpp
+        ../src/Processing/Detector/Detector.cpp
+        ../src/Processing/Detector/Detector_x86/Detector_x86.cpp
+        ../src/Processing/Detector/Detector_NEON/Detector_NEON.cpp
+        ../src/Processing/Detector/Detector_AVX2/Detector_AVX2.cpp
+        ../src/Processing/Detector/Library/DetectorLibrary.cpp
 
-set (
-  SOURCE_FILES
-  ../src/Processing/CRC32b/CRC/CRC32b.cpp
-  ../src/RingBuff/RingBuff.cpp
-  ../src/Tools/Parameters/Parameters.cpp
-  ../src/Tools/CTickCounter/CTickCounter.cpp
-  ../src/Tools/ExportVector/ExportVector.cpp
-  ../src/Tools/Conversion/cvt_float_i8.cpp
-  ../src/Tools/Conversion/cvt_float_u8.cpp
-  ../src/Tools/Conversion/cvt_u8_float.cpp
-  ../src/Tools/Conversion/cvt_i8_float.cpp
-  ../src/Processing/CplxModule/CplxModule.cpp
-  ../src/Processing/CplxModule/CplxModule_x86/CplxModule_x86.cpp
-  ../src/Processing/CplxModule/CplxModule_NEON/CplxModule_NEON.cpp
-  ../src/Processing/CplxModule/CplxModule_AVX2/CplxModule_AVX2.cpp
-  ../src/Processing/CplxModule/Library/CplxModuleLibrary.cpp
-  ../src/Radio/Receiver/Receiver.cpp
-  ../src/Radio/Receiver/Radio/SoapyRTLSdr/ReceiverSoapyRTLSdr.cpp
-  ../src/Radio/Receiver/Radio/SoapyHackRF/ReceiverSoapyHackRF.cpp
-  ../src/Radio/Receiver/Radio/SoapyUHD/ReceiverSoapyUHD.cpp
-  ../src/Radio/Receiver/Radio/HackRF/ReceiverHackRF.cpp
-  ../src/Radio/Receiver/Radio/USRP/ReceiverUSRP.cpp
-  ../src/Radio/Receiver/File/ReceiverFileRAW.cpp
-  ../src/Radio/Receiver/File/ReceiverFileStreamRAW.cpp
-  ../src/Radio/Receiver/File/ReceiverFileUHD.cpp
-  ../src/Radio/Receiver/File/ReceiverFileBZ2.cpp
-  ../src/Radio/Receiver/Library/ReceiverLibrary.cpp
-  ../src/Processing/PPM/demod/PPM_demod.cpp
-  ../src/Processing/DataPacking/BitPacking/BitPacking.cpp
-  ../src/Processing/CRC32b/CheckCRC32b/CheckCRC32b.cpp
-  ../src/Processing/CRC32b/RemoveCRC32b/RemoveCRC32b.cpp
-  ../src/Processing/ADSBSynchro/RemoveADSBSynchro/RemoveADSBSynchro.cpp
-  ../src/Processing/IQ/Removing/IQ_Removing.cpp
-  ../src/Processing/Sampling/Down/DownSampling.cpp
-  ../src/Processing/Detector/Detector.cpp
-  ../src/Processing/Detector/Detector_x86/Detector_x86.cpp
-  ../src/Processing/Detector/Detector_NEON/Detector_NEON.cpp
-  ../src/Processing/Detector/Detector_AVX2/Detector_AVX2.cpp
-  ../src/Processing/Detector/Library/DetectorLibrary.cpp
-  rcv_adsb/rcv_adsb.cpp
-)
+        rcv_usrp/rcv_usrp.cpp
+        )
 
-add_executable (rcv_adsb ${SOURCE_FILES})
-target_compile_options(rcv_adsb PRIVATE ${IGNORED_WARNING})
+add_executable(rcv_usrp ${SOURCE_FILES})
+target_compile_options(rcv_usrp ${IGNORED_WARNING})
 
-target_link_libraries (rcv_adsb uhd)
-target_link_libraries (rcv_adsb hackrf)
-target_link_libraries (rcv_adsb SoapySDR)
-target_link_libraries (rcv_adsb bz2)
+target_link_libraries(rcv_usrp uhd)
+target_link_libraries(rcv_usrp hackrf)
+target_link_libraries(rcv_usrp SoapySDR)
+target_link_libraries(rcv_usrp bz2)
 
-# ##############################################################################
+########################################################################################################################
 
-project (rcv_calibration)
+project(rcv_adsb)
 
-set (
-  SOURCE_FILES
-  ../src/Processing/CRC32b/CRC/CRC32b.cpp
-  ../src/RingBuff/RingBuff.cpp
-  ../src/Tools/Parameters/Parameters.cpp
-  ../src/Tools/CTickCounter/CTickCounter.cpp
-  ../src/Tools/ExportVector/ExportVector.cpp
-  ../src/Tools/Conversion/cvt_float_i8.cpp
-  ../src/Tools/Conversion/cvt_float_u8.cpp
-  ../src/Tools/Conversion/cvt_u8_float.cpp
-  ../src/Tools/Conversion/cvt_i8_float.cpp
-  ../src/Processing/CplxModule/CplxModule.cpp
-  ../src/Processing/CplxModule/CplxModule_x86/CplxModule_x86.cpp
-  ../src/Processing/CplxModule/CplxModule_NEON/CplxModule_NEON.cpp
-  ../src/Processing/CplxModule/CplxModule_AVX2/CplxModule_AVX2.cpp
-  ../src/Processing/CplxModule/Library/CplxModuleLibrary.cpp
-  ../src/Radio/Receiver/Receiver.cpp
-  ../src/Radio/Receiver/Radio/SoapyRTLSdr/ReceiverSoapyRTLSdr.cpp
-  ../src/Radio/Receiver/Radio/SoapyHackRF/ReceiverSoapyHackRF.cpp
-  ../src/Radio/Receiver/Radio/SoapyUHD/ReceiverSoapyUHD.cpp
-  ../src/Radio/Receiver/Radio/HackRF/ReceiverHackRF.cpp
-  ../src/Radio/Receiver/Radio/USRP/ReceiverUSRP.cpp
-  ../src/Radio/Receiver/File/ReceiverFileRAW.cpp
-  ../src/Radio/Receiver/File/ReceiverFileStreamRAW.cpp
-  ../src/Radio/Receiver/File/ReceiverFileUHD.cpp
-  ../src/Radio/Receiver/File/ReceiverFileBZ2.cpp
-  ../src/Radio/Receiver/Library/ReceiverLibrary.cpp
-  ../src/Processing/PPM/demod/PPM_demod.cpp
-  ../src/Processing/DataPacking/BitPacking/BitPacking.cpp
-  ../src/Processing/CRC32b/CheckCRC32b/CheckCRC32b.cpp
-  ../src/Processing/CRC32b/RemoveCRC32b/RemoveCRC32b.cpp
-  ../src/Processing/ADSBSynchro/RemoveADSBSynchro/RemoveADSBSynchro.cpp
-  ../src/Processing/IQ/Removing/IQ_Removing.cpp
-  ../src/Processing/Sampling/Down/DownSampling.cpp
-  ../src/Processing/Detector/Detector.cpp
-  ../src/Processing/Detector/Detector_x86/Detector_x86.cpp
-  ../src/Processing/Detector/Detector_NEON/Detector_NEON.cpp
-  ../src/Processing/Detector/Detector_AVX2/Detector_AVX2.cpp
-  ../src/Processing/Detector/Library/DetectorLibrary.cpp
-  rcv_calibration/rcv_calibration.cpp
-)
+set(SOURCE_FILES
+        ../src/Processing/CRC32b/CRC/CRC32b.cpp
+        ../src/RingBuff/RingBuff.cpp
+        ../src/Tools/Parameters/Parameters.cpp
+        ../src/Tools/CTickCounter/CTickCounter.cpp
+        ../src/Tools/ExportVector/ExportVector.cpp
+        ../src/Tools/Conversion/cvt_float_i8.cpp
+        ../src/Tools/Conversion/cvt_float_u8.cpp
+        ../src/Tools/Conversion/cvt_u8_float.cpp
+        ../src/Tools/Conversion/cvt_i8_float.cpp
 
-add_executable (rcv_calibration ${SOURCE_FILES})
-target_compile_options(rcv_calibration PRIVATE ${IGNORED_WARNING})
+        ../src/Processing/CplxModule/CplxModule.cpp
+        ../src/Processing/CplxModule/CplxModule_x86/CplxModule_x86.cpp
+        ../src/Processing/CplxModule/CplxModule_NEON/CplxModule_NEON.cpp
+        ../src/Processing/CplxModule/CplxModule_AVX2/CplxModule_AVX2.cpp
+        ../src/Processing/CplxModule/Library/CplxModuleLibrary.cpp
 
-target_link_libraries (rcv_calibration uhd)
-target_link_libraries (rcv_calibration hackrf)
-target_link_libraries (rcv_calibration SoapySDR)
-target_link_libraries (rcv_calibration bz2)
+        ../src/Radio/Receiver/Receiver.cpp
+        ../src/Radio/Receiver/Radio/SoapyRTLSdr/ReceiverSoapyRTLSdr.cpp
+        ../src/Radio/Receiver/Radio/SoapyHackRF/ReceiverSoapyHackRF.cpp
+        ../src/Radio/Receiver/Radio/SoapyUHD/ReceiverSoapyUHD.cpp
+        ../src/Radio/Receiver/Radio/HackRF/ReceiverHackRF.cpp
+        ../src/Radio/Receiver/Radio/USRP/ReceiverUSRP.cpp
+        ../src/Radio/Receiver/Radio/ThreadUSRP/ReceiverThreadUSRP.cpp
 
-# ##############################################################################
+        ../src/Radio/Receiver/File/ReceiverFileRAW.cpp
+        ../src/Radio/Receiver/File/ReceiverFileStreamRAW.cpp
+        ../src/Radio/Receiver/File/ReceiverFileUHD.cpp
+        ../src/Radio/Receiver/File/ReceiverFileBZ2.cpp
+        ../src/Radio/Receiver/Library/ReceiverLibrary.cpp
 
-project (snd_usrp)
+        ../src/Processing/PPM/demod/PPM_demod.cpp
+        ../src/Processing/DataPacking/BitPacking/BitPacking.cpp
+        ../src/Processing/CRC32b/CheckCRC32b/CheckCRC32b.cpp
+        ../src/Processing/CRC32b/RemoveCRC32b/RemoveCRC32b.cpp
+        ../src/Processing/ADSBSynchro/RemoveADSBSynchro/RemoveADSBSynchro.cpp
+        ../src/Processing/IQ/Removing/IQ_Removing.cpp
+        ../src/Processing/Sampling/Down/DownSampling.cpp
+        ../src/Processing/Detector/Detector.cpp
+        ../src/Processing/Detector/Detector_x86/Detector_x86.cpp
+        ../src/Processing/Detector/Detector_NEON/Detector_NEON.cpp
+        ../src/Processing/Detector/Detector_AVX2/Detector_AVX2.cpp
+        ../src/Processing/Detector/Library/DetectorLibrary.cpp
 
-set (
-  SOURCE_FILES
-  ../src/RingBuff/RingBuff.cpp
-  ../src/Tools/Parameters/Parameters.cpp
-  ../src/Radio/Emitter/Emitter.cpp
-  ../src/Radio/Emitter/Library/EmitterLibrary.cpp
-  ../src/Radio/Emitter/Radio/HackRF/EmitterHackRF.cpp
-  ../src/Radio/Emitter/Radio/USRP/EmitterUSRP.cpp
-  ../src/Radio/Emitter/File/EmitterFileRAW.cpp
-  ../src/Processing/CRC32b/CRC/CRC32b.cpp
-  ../src/Processing/CRC32b/InsertCRC32b/InsertCRC32b.cpp
-  ../src/Processing/DataPacking/BitUnpacking/BitUnpacking.cpp
-  ../src/Processing/Sampling/Up/UpSampling.cpp
-  ../src/Processing/IQ/Insertion/IQ_Insertion.cpp
-  ../src/Processing/PPM/mod/PPM_mod.cpp
-  ../src/Processing/IQ/Removing/IQ_Removing.cpp
-  ../src/Processing/Sampling/Down/DownSampling.cpp
-  ../src/Processing/ADSBSynchro/InsertADSBSynchro/InsertADSBSynchro.cpp
-  snd_usrp/snd_usrp.cpp
-)
+        rcv_adsb/rcv_adsb.cpp
+        )
 
-add_executable (snd_usrp ${SOURCE_FILES})
-target_compile_options(snd_usrp PRIVATE ${IGNORED_WARNING})
+add_executable(rcv_adsb ${SOURCE_FILES})
+target_compile_options(rcv_adsb ${IGNORED_WARNING})
 
-target_link_libraries (snd_usrp uhd)
-target_link_libraries (snd_usrp hackrf)
-target_link_libraries (snd_usrp SoapySDR)
-target_link_libraries (snd_usrp bz2)
+target_link_libraries(rcv_adsb uhd)
+target_link_libraries(rcv_adsb hackrf)
+target_link_libraries(rcv_adsb SoapySDR)
+target_link_libraries(rcv_adsb bz2)
+
+########################################################################################################################
+
+project(rcv_calibration)
+
+set(SOURCE_FILES
+        ../src/Processing/CRC32b/CRC/CRC32b.cpp
+        ../src/RingBuff/RingBuff.cpp
+        ../src/Tools/Parameters/Parameters.cpp
+        ../src/Tools/CTickCounter/CTickCounter.cpp
+        ../src/Tools/ExportVector/ExportVector.cpp
+        ../src/Tools/Conversion/cvt_float_i8.cpp
+        ../src/Tools/Conversion/cvt_float_u8.cpp
+        ../src/Tools/Conversion/cvt_u8_float.cpp
+        ../src/Tools/Conversion/cvt_i8_float.cpp
+
+        ../src/Processing/CplxModule/CplxModule.cpp
+        ../src/Processing/CplxModule/CplxModule_x86/CplxModule_x86.cpp
+        ../src/Processing/CplxModule/CplxModule_NEON/CplxModule_NEON.cpp
+        ../src/Processing/CplxModule/CplxModule_AVX2/CplxModule_AVX2.cpp
+        ../src/Processing/CplxModule/Library/CplxModuleLibrary.cpp
+
+        ../src/Radio/Receiver/Receiver.cpp
+        ../src/Radio/Receiver/Radio/SoapyRTLSdr/ReceiverSoapyRTLSdr.cpp
+        ../src/Radio/Receiver/Radio/SoapyHackRF/ReceiverSoapyHackRF.cpp
+        ../src/Radio/Receiver/Radio/SoapyUHD/ReceiverSoapyUHD.cpp
+        ../src/Radio/Receiver/Radio/HackRF/ReceiverHackRF.cpp
+        ../src/Radio/Receiver/Radio/USRP/ReceiverUSRP.cpp
+        ../src/Radio/Receiver/Radio/ThreadUSRP/ReceiverThreadUSRP.cpp
+
+        ../src/Radio/Receiver/File/ReceiverFileRAW.cpp
+        ../src/Radio/Receiver/File/ReceiverFileStreamRAW.cpp
+        ../src/Radio/Receiver/File/ReceiverFileUHD.cpp
+        ../src/Radio/Receiver/File/ReceiverFileBZ2.cpp
+        ../src/Radio/Receiver/Library/ReceiverLibrary.cpp
+
+        ../src/Processing/PPM/demod/PPM_demod.cpp
+        ../src/Processing/DataPacking/BitPacking/BitPacking.cpp
+        ../src/Processing/CRC32b/CheckCRC32b/CheckCRC32b.cpp
+        ../src/Processing/CRC32b/RemoveCRC32b/RemoveCRC32b.cpp
+        ../src/Processing/ADSBSynchro/RemoveADSBSynchro/RemoveADSBSynchro.cpp
+        ../src/Processing/IQ/Removing/IQ_Removing.cpp
+        ../src/Processing/Sampling/Down/DownSampling.cpp
+        ../src/Processing/Detector/Detector.cpp
+        ../src/Processing/Detector/Detector_x86/Detector_x86.cpp
+        ../src/Processing/Detector/Detector_NEON/Detector_NEON.cpp
+        ../src/Processing/Detector/Detector_AVX2/Detector_AVX2.cpp
+        ../src/Processing/Detector/Library/DetectorLibrary.cpp
+
+        rcv_calibration/rcv_calibration.cpp
+        )
+
+add_executable(rcv_calibration ${SOURCE_FILES})
+target_compile_options(rcv_calibration ${IGNORED_WARNING})
+
+target_link_libraries(rcv_calibration uhd)
+target_link_libraries(rcv_calibration hackrf)
+target_link_libraries(rcv_calibration SoapySDR)
+target_link_libraries(rcv_calibration bz2)
+
+########################################################################################################################
+
+project(snd_usrp)
+
+set(SOURCE_FILES
+        ../src/RingBuff/RingBuff.cpp
+        ../src/Tools/Parameters/Parameters.cpp
+
+        ../src/Radio/Emitter/Emitter.cpp
+        ../src/Radio/Emitter/Library/EmitterLibrary.cpp
+        ../src/Radio/Emitter/Radio/HackRF/EmitterHackRF.cpp
+        ../src/Radio/Emitter/Radio/USRP/EmitterUSRP.cpp
+        ../src/Radio/Emitter/File/EmitterFileRAW.cpp
+
+        ../src/Processing/CRC32b/CRC/CRC32b.cpp
+        ../src/Processing/CRC32b/InsertCRC32b/InsertCRC32b.cpp
+        ../src/Processing/DataPacking/BitUnpacking/BitUnpacking.cpp
+        ../src/Processing/Sampling/Up/UpSampling.cpp
+        ../src/Processing/IQ/Insertion/IQ_Insertion.cpp
+        ../src/Processing/PPM/mod/PPM_mod.cpp
+        ../src/Processing/IQ/Removing/IQ_Removing.cpp
+        ../src/Processing/Sampling/Down/DownSampling.cpp
+        ../src/Processing/ADSBSynchro/InsertADSBSynchro/InsertADSBSynchro.cpp
+
+        snd_usrp/snd_usrp.cpp
+        )
+
+add_executable(snd_usrp ${SOURCE_FILES})
+target_compile_options(snd_usrp ${IGNORED_WARNING})
+
+target_link_libraries(snd_usrp uhd)
+target_link_libraries(snd_usrp hackrf)
+target_link_libraries(snd_usrp SoapySDR)
+target_link_libraries(snd_usrp bz2)

@@ -31,7 +31,7 @@ void ReceiverUSRP::initialize(){
     cout << "[UHD] Sampling Rate set to         : " << usrp->get_rx_rate() << " MHz" << endl;
     cout << "[UHD] Central Frequency set to     : " << usrp->get_rx_freq() << " MHz" << endl;
     cout << "[UHD] Receiver gain is set to      : " << usrp->get_rx_gain() << " dB" << endl;
-    cout << "[UHD] Reception antenna is set to  : TRX" << endl;
+    cout << "[UHD] Reception antenna is set to  : " << usrp->get_rx_antenna() << endl;
     cout << "[UHD] Sample data format is set to : fc32" << endl;
     cout << "[UHD] #channels for rx_stream      : " << rx_stream->get_num_channels() << " channel(s)" << endl;
     cout << "[UHD] #samples in rx_stream buffer : " << rx_stream->get_max_num_samps() << " IQs" << endl;

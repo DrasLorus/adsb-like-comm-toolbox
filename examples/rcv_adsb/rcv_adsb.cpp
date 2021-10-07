@@ -73,13 +73,9 @@ void my_ctrl_c_handler(int s) {
 int main(int argc, char *argv[]) {
     init_crc_lut();
 
-#if 0
-    const float ref_latitude  = 44.806884; // latitude  de l'ENSEIRB
-    const float ref_longitude = -0.606629; // longitude de l'ENSEIRB
-#else
-    const float ref_latitude  = 44.820919; // latitude  de la maison
-    const float ref_longitude = -0.502448; // longitude de la maison
-#endif
+    uint32_t buffer_size = 65536;
+    float ref_latitude   = 44.820919; // latitude  de la maison
+    float ref_longitude  = -0.502448; // longitude de la maison
 
     map<int32_t, Avion*> liste_m;
     vector<Avion *> liste_v;
@@ -96,6 +92,7 @@ int main(int argc, char *argv[]) {
     uint32_t nbBonsCRCs_1x   = 0;
     uint32_t nbBonsCRCs_2x   = 0;
     uint32_t nbBonsCRCs_llr  = 0;
+    uint32_t nbDF18Frames    = 0;
     uint32_t nbStrangeFrames = 0;
 
     int c; //getopt
@@ -172,6 +169,9 @@ int main(int argc, char *argv[]) {
                     {"ppm",         required_argument, NULL, 'P'}, // changer la frequence echantillonnage
                     {"liste",       no_argument,       NULL, 'l'}, // changer la frequence echantillonnage
 
+                    {"buffer_size",     required_argument,       NULL, 'B'}, // changer la frequence echantillonnage
+                    {"ENSEIRB",     no_argument,       NULL, 'E'}, // changer la frequence echantillonnage
+
                     {NULL, 0,                          NULL, 0}
             };
 
@@ -212,6 +212,11 @@ int main(int argc, char *argv[]) {
                 param.set("payload", std::atoi(optarg));
                 break;
 
+            case 'B':
+                param.set("buffer_size", std::atoi(optarg));
+                buffer_size = std::atoi(optarg);
+                break;
+
             case 's':
                 param.set("ps_min", std::stof(optarg));
                 if ((param.toFloat("ps_min") > 1.0f) || (param.toFloat("ps_min") < 0.0f)) {
@@ -248,6 +253,11 @@ int main(int argc, char *argv[]) {
             case 'Q':
                 param.set("mode_radio", "file-stream");
                 param.set("filename", optarg);
+                break;
+
+            case 'E':
+                ref_latitude  = 44.806884; // latitude  de l'ENSEIRB
+                ref_longitude = -0.606629; // longitude de l'ENSEIRB
                 break;
 
             case '1':
@@ -301,7 +311,7 @@ int main(int argc, char *argv[]) {
     cout << endl;
 
     // param.toDouble("fe")/8
-    vector<complex<float> > buffer(65536); // Notre buffer à nous dans le programme
+    vector<complex<float> > buffer(buffer_size); // Notre buffer à nous dans le programme
 
     //
     // Selection du module SDR employé dans le programme
@@ -459,6 +469,8 @@ int main(int argc, char *argv[]) {
         fprintf(file_frames_dec, "+---------------+--------+--------+-----+--------+-----+----------+-------------+------+--------+-----------+-----+---------+---------+-------+-----+\n");
     }
 
+    const uint32_t acq_per_sec = 2 * param.toInt("fe") / (buffer.size() -vec_data.size());
+
     while (radio->alive() && (isFinished == false))
     {
 //        auto startIter = std::chrono::system_clock::now();
@@ -567,8 +579,8 @@ int main(int argc, char *argv[]) {
                 // On stocke les données pour une utilisation ultérieure
                 //
                 if( file_frames_bin != nullptr ) {
-                         if(crc_initial ) fprintf(file_frames_bin, "%5d | OK | [", nbTramesDetectees);
-                    else            fprintf(file_frames_bin, "%5d | KO | [", nbTramesDetectees);
+                    if(crc_initial ) fprintf(file_frames_bin, "%5d | OK | [", nbTramesDetectees);
+                    else             fprintf(file_frames_bin, "%5d | KO | [", nbTramesDetectees);
                     for (int x = 0; x < vec_sync.size() - 1; x += 1)
                         fprintf(file_frames_bin, "%d,", vec_sync[x]);
                     fprintf(file_frames_bin, "%d]\n", vec_sync[vec_sync.size() - 1]);
@@ -734,8 +746,10 @@ int main(int argc, char *argv[]) {
                         const int32_t type_frame = pack_bits(vec_sync.data() + 32, 5);
                         const int32_t oaci_value = pack_bits(vec_sync.data() + 8, 24);
 
-                        if( df_value != 17 )
-                        {
+                        if( df_value == 18 ){
+                            nbDF18Frames += 1;
+                            continue;
+                        }else if( df_value != 17 ){
                             nbStrangeFrames += 1;
                             continue;
                         }
@@ -968,7 +982,7 @@ int main(int argc, char *argv[]) {
         loop_counter += 1;
 
 
-        if ( (dump_resume == true) && ( (loop_counter % 32 == 0) || (!radio->alive()) || (isFinished == true)) )
+        if ( (dump_resume == true) && ( (loop_counter % acq_per_sec == 0) || (!radio->alive()) || (isFinished == true)) )
         {
             printf("\x1B[1;1H\x1B[2J");
             const auto stop = std::chrono::system_clock::now();
@@ -980,8 +994,8 @@ int main(int argc, char *argv[]) {
             std::cout << " - Number of initially correct  CRC values     : " << nbBonsCRC_init    << std::endl;
             std::cout << " - Number of saved frames with bit-flip (x1)   : " << nbBonsCRCs_1x     << std::endl;
             std::cout << " - Number of saved frames with bit-flip (x2)   : " << nbBonsCRCs_2x     << std::endl;
-            std::cout << "Number of discarded frames with strange values : " << nbStrangeFrames   << " (type != 17)" <<std::endl;
-            nbStrangeFrames += 1;
+            std::cout << "Number of discarded frames with DF = 18        : " << nbDF18Frames      << " (type == 18)" <<std::endl;
+            std::cout << "Number of discarded frames with strange values : " << nbStrangeFrames   << " (type != 17 && type != 18)" <<std::endl;
 
             std::cout << std::endl;
             printf("OACI   | TYPE   | NAME     | CORR. SCORE       |  LATITUDE | LONGITUDE | H.SPEED   | V.SPEED   | ANGLE | TYPE | ALTITUDE  | DISTANCE [min,max] | FRAMES | LAST     |\n");
@@ -991,10 +1005,10 @@ int main(int argc, char *argv[]) {
                 if( liste_v.at(i)->get_messages() >= 1 )    // Pour filter les bétises...
                     liste_v.at(i)->print();
             }
-            std::cout << std::endl;
-            std::cout << std::endl;
-            std::cout << "MESSAGES:" << std::endl;
-            printf("|      n       |  t (in s)  |  Corr. |  DF |   AA   | FTC |    CS    | ALT (ft) | CPRF | LON (deg) | LAT (deg) | Speed.H | Speed.V | Angle | CRC |\n");
+//            std::cout << std::endl;
+//            std::cout << std::endl;
+//            std::cout << "MESSAGES:" << std::endl;
+//            printf("|      n       |  t (in s)  |  Corr. |  DF |   AA   | FTC |    CS    | ALT (ft) | CPRF | LON (deg) | LAT (deg) | Speed.H | Speed.V | Angle | CRC |\n");
         }
         //
         // ON GARDE UNE TRACE DU TEMPS D'EXECUTION DE L'ITERATION POUR L'HISTOGRAMME DU REPORT

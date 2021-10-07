@@ -10,6 +10,20 @@
 #include "../Radio/SoapyUHD/ReceiverSoapyUHD.hpp"
 #include "../Radio/SoapyRTLSdr/ReceiverSoapyRTLSdr.hpp"
 #include "../Radio/USRP/ReceiverUSRP.hpp"
+#include "../Radio/ThreadUSRP/ReceiverThreadUSRP.hpp"
+
+#include <algorithm>
+
+inline bool iequals(const string& a, const string& b)
+{
+    return std::equal(a.begin(), a.end(),
+                      b.begin(), b.end(),
+                      [](char a, char b) {
+                          return tolower(a) == tolower(b);
+                      });
+}
+
+
 
 ReceiverLibrary::ReceiverLibrary()
 {
@@ -30,9 +44,13 @@ Receiver* ReceiverLibrary::allocate(Parameters& param)
     transform(type.begin(), type.end(), type.begin(), ::tolower);
 
     Receiver* radio;
+    //
+    //
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //
+    //
     if(
-            (type == "radio" && module == "hackrf") ||
-            (type == "radio" && module == "HackRF")
+            (type == "radio" && iequals(module, "hackrf"))
     ) {
         ReceiverHackRF* r = new ReceiverHackRF(param.toDouble("fc"), param.toDouble("fe"));
         if( param.toInt("hackrf_amplifier") != -1 ) r->set_amp_enable( param.toInt("hackrf_amplifier") );
@@ -41,28 +59,34 @@ Receiver* ReceiverLibrary::allocate(Parameters& param)
         radio = r;
 
     } else if(
-            (type == "radio" && module == "SoapyHackRF") ||
-            (type == "radio" && module == "soapyhackrf")
+            (type == "radio" && iequals(module, "soapyhackrf" )) ||
+            (type == "radio" && iequals(module, "soapy_hackrf"))
     ) {
         ReceiverSoapyHackRF* r = new ReceiverSoapyHackRF(param.toDouble("fc"), param.toDouble("fe"));
         if( param.toInt("hackrf_amplifier") != -1 ) r->set_amp_enable( param.toInt("hackrf_amplifier") );
-//        if( param.toInt("hackrf_vga_gain")  != -1 ) r->set_vga_gain  ( param.toInt("hackrf_vga_gain") );
-//        if( param.toInt("hackrf_lna_gain")  != -1 ) r->set_lna_gain  ( param.toInt("hackrf_lna_gain") );
-        if( param.toInt("receiver_gain")  != -1 ) r->set_vga_gain  ( param.toInt("receiver_gain") );
-        if( param.toInt("receiver_gain")  != -1 ) r->set_lna_gain  ( param.toInt("receiver_gain") );
+        if( param.toInt("receiver_gain")    != -1 ) r->set_vga_gain  ( param.toInt("receiver_gain") );
+        if( param.toInt("receiver_gain")    != -1 ) r->set_lna_gain  ( param.toInt("receiver_gain") );
         radio = r;
-
+    //
+    //
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //
+    //
     } else if(
-            (type == "radio" && module == "SoapyRTLSdr") ||
-            (type == "radio" && module == "soapyrtlsdr")
+            (type == "radio" && iequals(module, "soapyrtlsdr" )) ||
+            (type == "radio" && iequals(module, "soapy_rtlsdr"))
     ) {
         ReceiverSoapyRTLSdr* r = new ReceiverSoapyRTLSdr(param.toDouble("fc"), param.toDouble("fe"));
         if( param.toInt("receiver_gain")  != -1 )
             r->set_tuner_gain( param.toDouble("receiver_gain") );
         radio = r;
-
+    //
+    //
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //
+    //
     } else if(
-            (type == "radio" && module == "usrp")
+            (type == "radio" && iequals(module, "usrp"))
             ) {
         ReceiverUSRP* r = new ReceiverUSRP(param.toDouble("fc"), param.toDouble("fe"));
         if( param.toInt("receiver_gain")  != -1 )
@@ -70,15 +94,25 @@ Receiver* ReceiverLibrary::allocate(Parameters& param)
         radio = r;
 
     } else if(
-            (type == "radio" && module == "SoapyUHD") ||
-            (type == "radio" && module == "SoapyUhd")
+            (type == "radio" && iequals(module, "threadusrp") ) ||
+            (type == "radio" && iequals(module, "thread_usrp"))
+            ) {
+        ReceiverThreadUSRP* r = new ReceiverThreadUSRP(param.toDouble("fc"), param.toDouble("fe"));
+        if( param.toInt("receiver_gain")  != -1 )
+            r->set_rx_gain( param.toInt("receiver_gain") );
+        radio = r;
+
+    } else if(
+            (type == "radio" && iequals(module, "soapyusrp") ) ||
+            (type == "radio" && iequals(module, "soapy_usrp"))
             ) {
         ReceiverSoapyUHD* r = new ReceiverSoapyUHD(param.toDouble("fc"), param.toDouble("fe"));
         if( param.toInt("receiver_gain")  != -1 )
             r->set_gain( param.toInt("receiver_gain") );
         radio = r;
-
     //
+    //
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     //
     } else if( type == "file" && (module.find(".raw") != std::string::npos) ) {
@@ -92,8 +126,9 @@ Receiver* ReceiverLibrary::allocate(Parameters& param)
 
     } else if( type == "file" && (module.find(".txt") != std::string::npos) ) {
         radio = new ReceiverFileUHD(param.toString("filename"));
-
     //
+    //
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     //
     } else if( type == "file-stream" && (module.find(".raw") != std::string::npos) ) {
@@ -112,7 +147,11 @@ Receiver* ReceiverLibrary::allocate(Parameters& param)
         ReceiverFileStreamRAW* r = new ReceiverFileStreamRAW(param.toString("filename"), true);
         radio = r;
     }
-    
+    //
+    //
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //
+    //
     else
     {
         cout << "Error in file (" << __FILE__ << ")" << " at line (" << __LINE__ << ")" << endl;

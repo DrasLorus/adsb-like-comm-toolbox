@@ -194,16 +194,6 @@ bool ReceiverSoapyHackRF::reception(std::vector< std::complex<float> >& cbuffer,
         }
     }while( (to_read - nb_read) != 0 );
 
-#if 1
-//    for(uint32_t i = 0; i < to_read; i += 1)
-//        buff[i] *= 127.0f;
-#else
-    float* pbuff = (float *)cbuffer.data();
-    for(int i = 0; i < 2 * to_read; i += 1)
-    {
-        pbuff[i] = pbuff[i] * 127.0f;
-    }
-#endif
     return true;
 }
 

@@ -149,17 +149,17 @@ public:
         {
             sumv += binValues[i];
         }
-        int32_t first = 0;
+        // int32_t first = 0;
         for(int32_t i = 0; i <  binValues.size(); i++)
         {
             if(binValues[i] != 0) break;
-            first = i;
+            // first = i;
         }
-        int last = binValues.size() - 1;
+        // int last = binValues.size() - 1;
         for(int32_t i = binValues.size() - 1; i >= 0; i -= 1)
         {
             if(binValues[i] != 0) break;
-            last = i;
+            // last = i;
         }
         for(int32_t i = 0; i <  binValues.size(); i++)
         {

@@ -167,7 +167,7 @@ bool ReceiverSoapyUHD::reception(std::vector< std::complex<float> >& cbuffer, co
         }
     }while( (to_read - nb_read) != 0 );
 
-#if 0
+#if 1
     const uint32_t length  = cbuffer.size();
     for(uint32_t loop = coverage; loop < length; loop += 1)
     {
@@ -181,9 +181,11 @@ bool ReceiverSoapyUHD::reception(std::vector< std::complex<float> >& cbuffer, co
     acqn += 1;
     if( acqn%1024 == 0)
     {
-        if( v_max < 0.10f ) {
+        if( v_max < 0.10 ) {
             set_gain(get_gain() + 1.0f);
             std::cout << "[INFO] Increasing the SdR RX gain [gain = " << get_gain() << " dB]" << std::endl;
+            std::cout << "       Automatic gain control (vmin = " << v_min << " and vmax = " << v_max << ")" << std::endl;
+        }else{
             std::cout << "       Automatic gain control (vmin = " << v_min << " and vmax = " << v_max << ")" << std::endl;
         }
     }
