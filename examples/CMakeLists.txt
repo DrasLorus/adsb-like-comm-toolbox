@@ -47,6 +47,8 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/opt/homebrew/opt/bzip2/
 
 set(CMAKE_CXX_STANDARD 17)
 
+find_package(Threads REQUIRED)
+
 set (IGNORED_WARNING -Wno-unused-parameter -Wno-sign-compare)
 
 ########################################################################################################################
@@ -101,12 +103,13 @@ set(SOURCE_FILES
         )
 
 add_executable(rcv_usrp ${SOURCE_FILES})
-target_compile_options(rcv_usrp ${IGNORED_WARNING})
+target_compile_options(rcv_usrp PRIVATE ${IGNORED_WARNING})
 
 target_link_libraries(rcv_usrp uhd)
 target_link_libraries(rcv_usrp hackrf)
 target_link_libraries(rcv_usrp SoapySDR)
 target_link_libraries(rcv_usrp bz2)
+target_link_libraries(rcv_usrp Threads::Threads)
 
 ########################################################################################################################
 
@@ -160,12 +163,13 @@ set(SOURCE_FILES
         )
 
 add_executable(rcv_adsb ${SOURCE_FILES})
-target_compile_options(rcv_adsb ${IGNORED_WARNING})
+target_compile_options(rcv_adsb PRIVATE ${IGNORED_WARNING})
 
 target_link_libraries(rcv_adsb uhd)
 target_link_libraries(rcv_adsb hackrf)
 target_link_libraries(rcv_adsb SoapySDR)
 target_link_libraries(rcv_adsb bz2)
+target_link_libraries(rcv_adsb Threads::Threads)
 
 ########################################################################################################################
 
@@ -219,12 +223,13 @@ set(SOURCE_FILES
         )
 
 add_executable(rcv_calibration ${SOURCE_FILES})
-target_compile_options(rcv_calibration ${IGNORED_WARNING})
+target_compile_options(rcv_calibration PRIVATE ${IGNORED_WARNING})
 
 target_link_libraries(rcv_calibration uhd)
 target_link_libraries(rcv_calibration hackrf)
 target_link_libraries(rcv_calibration SoapySDR)
 target_link_libraries(rcv_calibration bz2)
+target_link_libraries(rcv_calibration Threads::Threads)
 
 ########################################################################################################################
 
@@ -254,9 +259,10 @@ set(SOURCE_FILES
         )
 
 add_executable(snd_usrp ${SOURCE_FILES})
-target_compile_options(snd_usrp ${IGNORED_WARNING})
+target_compile_options(snd_usrp PRIVATE ${IGNORED_WARNING})
 
 target_link_libraries(snd_usrp uhd)
 target_link_libraries(snd_usrp hackrf)
 target_link_libraries(snd_usrp SoapySDR)
 target_link_libraries(snd_usrp bz2)
+target_link_libraries(snd_usrp Threads::Threads)
