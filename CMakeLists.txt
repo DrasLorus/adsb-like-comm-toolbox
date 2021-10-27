@@ -174,4 +174,5 @@ target_sources (
           src/Tools/ExportVector/ExportVector.cpp
           src/Tools/Parameters/Parameters.cpp
 )
-target_link_libraries (commToolbox PUBLIC UHD)
+target_link_libraries (commToolbox PUBLIC ${UHD_LIBRARIES})
+target_include_directories (commToolbox PUBLIC src)
