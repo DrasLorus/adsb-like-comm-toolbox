@@ -1,60 +1,42 @@
 cmake_minimum_required (VERSION 3.16)
 
-set (
-  CMAKE_CXX_FLAGS
-  "                   -Wall -Ofast -march=native -mtune=native -Wno-unknown-pragmas"
+set (CMAKE_CXX_FLAGS
+     "                   -Wall -Ofast -march=native -mtune=native -Wno-unknown-pragmas"
 )
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/local/opt/hackrf/include") #
-# HackRF set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}
-# -I/usr/local/Cellar/boost/1.74.0/include")   # Boost set(CMAKE_CXX_FLAGS
-# "${CMAKE_CXX_FLAGS} -I/usr/local/Cellar/uhd/4.0.0.0/include
-# -Wno-#pragma-messages")    # UHD set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}
-# -Rpass=loop-vectorize")
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/local/opt/hackrf/include") # HackRF
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/local/Cellar/boost/1.74.0/include")   # Boost
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/local/Cellar/uhd/4.0.0.0/include
+# -Wno-#pragma-messages")    # UHD set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Rpass=loop-vectorize")
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/local/include")
-set (CMAKE_CXX_FLAGS
-     "${CMAKE_CXX_FLAGS} -I/opt/homebrew/Cellar/uhd/4.0.0.0_2/include"
-)
-set (CMAKE_CXX_FLAGS
-     "${CMAKE_CXX_FLAGS} -I/opt/homebrew/Cellar/hackrf/2021.03.1/include"
-)
-set (CMAKE_CXX_FLAGS
-     "${CMAKE_CXX_FLAGS} -I/opt/homebrew/Cellar/soapysdr/0.8.1/include"
-)
-set (CMAKE_CXX_FLAGS
-     "${CMAKE_CXX_FLAGS} -I/opt/homebrew/Cellar/boost/1.76.0/include"
-)
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/opt/homebrew/Cellar/uhd/4.0.0.0_2/include")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/opt/homebrew/Cellar/hackrf/2021.03.1/include")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/opt/homebrew/Cellar/soapysdr/0.8.1/include")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/opt/homebrew/Cellar/boost/1.76.0/include")
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/opt/homebrew/opt/bzip2/include")
 
 # x86 part
 set (CMAKE_EXE_LINKER_FLAGS "-L/usr/local/lib") # UHD
 
-# set(CMAKE_EXE_LINKER_FLAGS " /usr/local/lib/libboost_filesystem-mt.dylib") #
-# UHD set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}
-# /usr/local/lib/libboost_system-mt.dylib") # UHD set(CMAKE_EXE_LINKER_FLAGS
-# "${CMAKE_EXE_LINKER_FLAGS} /usr/local/opt/hackrf/lib/libhackrf.a") # UHD
-# set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}
+# set(CMAKE_EXE_LINKER_FLAGS " /usr/local/lib/libboost_filesystem-mt.dylib") # UHD
+# set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /usr/local/lib/libboost_system-mt.dylib") #
+# UHD set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /usr/local/opt/hackrf/lib/libhackrf.a")
+# # UHD set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}
 # /usr/local/opt/libusb/lib/libusb-1.0.a") # UHD set(CMAKE_EXE_LINKER_FLAGS
-# "${CMAKE_EXE_LINKER_FLAGS} /usr/local/Cellar/uhd/4.0.0.0/lib/libuhd.dylib") #
-# UHD set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -framework
-# CoreFoundation -framework IOKit") # UHD set(CMAKE_EXE_LINKER_FLAGS
-# "${CMAKE_EXE_LINKER_FLAGS} -lncurses") # UHD set(CMAKE_EXE_LINKER_FLAGS
-# "${CMAKE_EXE_LINKER_FLAGS} -L/usr/local/lib -lSoapySDR") # SoapySDR
+# "${CMAKE_EXE_LINKER_FLAGS} /usr/local/Cellar/uhd/4.0.0.0/lib/libuhd.dylib") # UHD
+# set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -framework CoreFoundation -framework IOKit")
+# # UHD set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lncurses") # UHD
+# set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/usr/local/lib -lSoapySDR") # SoapySDR
 
 set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -luhd") # UHD
 set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lhackrf") # UHD
 set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lSoapySDR") # SoapySDR
-set (CMAKE_EXE_LINKER_FLAGS
-     "${CMAKE_EXE_LINKER_FLAGS} -L/opt/homebrew/Cellar/uhd/4.0.0.0_2/lib"
-) # UHD
-set (CMAKE_EXE_LINKER_FLAGS
-     "${CMAKE_EXE_LINKER_FLAGS} -L/opt/homebrew/Cellar/hackrf/2021.03.1/lib"
-) # UHD
-set (CMAKE_EXE_LINKER_FLAGS
-     "${CMAKE_EXE_LINKER_FLAGS} -L/opt/homebrew/Cellar/soapysdr/0.8.1/lib"
-) # UHD
-set (CMAKE_EXE_LINKER_FLAGS
-     "${CMAKE_EXE_LINKER_FLAGS} -L/opt/homebrew/opt/bzip2/lib"
-) # UHD
+set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/opt/homebrew/Cellar/uhd/4.0.0.0_2/lib"
+)# UHD
+set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/opt/homebrew/Cellar/hackrf/2021.03.1/lib"
+)# UHD
+set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/opt/homebrew/Cellar/soapysdr/0.8.1/lib"
+)# UHD
+set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/opt/homebrew/opt/bzip2/lib") # UHD
 
 set (CMAKE_CXX_STANDARD 17)
 
@@ -62,7 +44,7 @@ find_package (Threads REQUIRED)
 
 set (IGNORED_WARNING -Wno-unused-parameter -Wno-sign-compare)
 
-# ##############################################################################
+# ##################################################################################################
 
 project (rcv_usrp)
 
@@ -118,7 +100,7 @@ target_link_libraries (rcv_usrp SoapySDR)
 target_link_libraries (rcv_usrp bz2)
 target_link_libraries (rcv_usrp Threads::Threads)
 
-# ##############################################################################
+# ##################################################################################################
 
 project (rcv_adsb)
 
@@ -174,7 +156,7 @@ target_link_libraries (rcv_adsb SoapySDR)
 target_link_libraries (rcv_adsb bz2)
 target_link_libraries (rcv_adsb Threads::Threads)
 
-# ##############################################################################
+# ##################################################################################################
 
 project (rcv_calibration)
 
@@ -230,7 +212,7 @@ target_link_libraries (rcv_calibration SoapySDR)
 target_link_libraries (rcv_calibration bz2)
 target_link_libraries (rcv_calibration Threads::Threads)
 
-# ##############################################################################
+# ##################################################################################################
 
 project (snd_usrp)
 

@@ -1,7 +1,6 @@
 cmake_minimum_required (VERSION 3.16)
 
-# set ( CMAKE_CXX_FLAGS "-Wall -Ofast -march=native -mtune=native
-# -Wno-unknown-pragmas" )
+# set ( CMAKE_CXX_FLAGS "-Wall -Ofast -march=native -mtune=native -Wno-unknown-pragmas" )
 
 # set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/local/include")
 
@@ -9,9 +8,9 @@ cmake_minimum_required (VERSION 3.16)
 
 # set (CMAKE_EXE_LINKER_FLAGS "-L/usr/local/lib") # UHD
 
-# set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -luhd") # UHD set
-# (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lhackrf") # UHD set
-# (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lSoapySDR") # SoapySDR
+# set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -luhd") # UHD set (CMAKE_EXE_LINKER_FLAGS
+# "${CMAKE_EXE_LINKER_FLAGS} -lhackrf") # UHD set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}
+# -lSoapySDR") # SoapySDR
 
 set (CMAKE_CXX_STANDARD 14)
 set (CMAKE_CXX_EXTENSIONS OFF)
@@ -59,10 +58,7 @@ if (fast_opt)
     if (MCPU)
       add_compile_options (-mcpu=native)
     else ()
-      message (
-        WARNING
-          "Can't use native detection, neither -march, -mtune nor -mcpu. Disabled."
-      )
+      message (WARNING "Can't use native detection, neither -march, -mtune nor -mcpu. Disabled.")
     endif ()
   else ()
     add_compile_options (-march=native -mtune=native)
@@ -76,11 +72,11 @@ endif ()
 
 add_subdirectory (receiver_adsb EXCLUDE_FROM_ALL)
 
-# ##############################################################################
+# ##################################################################################################
 
 add_subdirectory (receiver_image EXCLUDE_FROM_ALL)
 
-# ##############################################################################
+# ##################################################################################################
 
 # project(tty_histo)
 #
@@ -90,36 +86,36 @@ add_subdirectory (receiver_image EXCLUDE_FROM_ALL)
 #
 # add_subdirectory (tty-histo)
 
-# ##############################################################################
+# ##################################################################################################
 
 add_subdirectory (emitter_adsb EXCLUDE_FROM_ALL)
 
-# ##############################################################################
+# ##################################################################################################
 
 add_subdirectory (emitter_image EXCLUDE_FROM_ALL)
 
-# ##############################################################################
+# ##################################################################################################
 
 add_subdirectory (emitter EXCLUDE_FROM_ALL)
 
-# ##############################################################################
+# ##################################################################################################
 
 add_subdirectory (receiver EXCLUDE_FROM_ALL)
 
-# ##############################################################################
+# ##################################################################################################
 
 # project(tty_emitter)
 #
-# SET(SOURCE_FILES src/CRC/CRC32b.cpp src/Frame/Frame.cpp
-# src/RingBuff/RingBuff.cpp src/tty_emitter.cpp )
+# SET(SOURCE_FILES src/CRC/CRC32b.cpp src/Frame/Frame.cpp src/RingBuff/RingBuff.cpp
+# src/tty_emitter.cpp )
 #
 # add_executable(tty_emitter ${SOURCE_FILES})
 
-# ##############################################################################
+# ##################################################################################################
 
 add_subdirectory (test_vecto EXCLUDE_FROM_ALL)
 
-# ##############################################################################
+# ##################################################################################################
 
 add_subdirectory (examples)
 

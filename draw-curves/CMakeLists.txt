@@ -2,9 +2,7 @@ cmake_minimum_required (VERSION 3.16)
 
 project (draw-curves)
 
-set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
-                       "${CMAKE_SOURCE_DIR}/cmake/Modules/"
-)
+set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 message ("${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
 set (CMAKE_CXX_STANDARD 14)
@@ -16,12 +14,10 @@ set (
   CMAKE_EXE_LINKER_FLAGS
   "-L/usr/local/lib -lsfml-graphics -lsfml-window -lsfml-system -lsfml-network -lsfml-audio -lhackrf"
 )
-# SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}
-# /usr/local/opt/hackrf/lib/libhackrf.a") SET(CMAKE_EXE_LINKER_FLAGS
-# "${CMAKE_EXE_LINKER_FLAGS} /usr/local/opt/libusb/lib/libusb-1.0.a")
-# SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -framework
-# CoreFoundation") SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}
-# -framework IOKit")
+# SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /usr/local/opt/hackrf/lib/libhackrf.a")
+# SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /usr/local/opt/libusb/lib/libusb-1.0.a")
+# SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -framework CoreFoundation")
+# SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -framework IOKit")
 
 set (
   SOURCE_FILES
@@ -49,17 +45,13 @@ find_package (
   REQUIRED
 )
 
-target_link_libraries (
-  draw-curves ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY}
-)
+target_link_libraries (draw-curves ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY})
 
 cmake_minimum_required (VERSION 3.16)
 
 project (draw-curves-rt)
 
-set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
-                       "${CMAKE_SOURCE_DIR}/cmake/Modules/"
-)
+set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 message ("${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
 set (CMAKE_CXX_STANDARD 14)
@@ -71,12 +63,10 @@ set (
   CMAKE_EXE_LINKER_FLAGS
   "-L/usr/local/lib -lsfml-graphics -lsfml-window -lsfml-system -lsfml-network -lsfml-audio -lhackrf"
 )
-# SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}
-# /usr/local/opt/hackrf/lib/libhackrf.a") SET(CMAKE_EXE_LINKER_FLAGS
-# "${CMAKE_EXE_LINKER_FLAGS} /usr/local/opt/libusb/lib/libusb-1.0.a")
-# SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -framework
-# CoreFoundation") SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}
-# -framework IOKit")
+# SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /usr/local/opt/hackrf/lib/libhackrf.a")
+# SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /usr/local/opt/libusb/lib/libusb-1.0.a")
+# SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -framework CoreFoundation")
+# SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -framework IOKit")
 
 set (
   SOURCE_FILES
@@ -104,6 +94,4 @@ find_package (
   REQUIRED
 )
 
-target_link_libraries (
-  draw-curves-rt ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY}
-)
+target_link_libraries (draw-curves-rt ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY})
